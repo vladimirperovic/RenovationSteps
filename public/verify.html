@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Email — RENOVATIONSTEPS.COM</title>
+  
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#ffffff">
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Verify your email to activate your RenovationSteps account.">
+  <meta property="og:title" content="Verify Email — RENOVATIONSTEPS.COM">
+  <meta property="og:description" content="Verify your email to activate your RenovationSteps account.">
+  <meta property="og:image" content="android-chrome-512x512.png">
+  <meta property="og:url" content="https://renovationsteps.com/verify.html">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://renovationsteps.com/verify.html">
+
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tailwind.css">
+  <style>
+    .logo-hover {
+      transition: transform 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .logo-hover:hover {
+      transform: translateY(-2px);
+    }
+    .logo-hover::after {
+      display: none !important;
+    }
+
+    @property --border-angle {
+      syntax: "<angle>";
+      inherits: true;
+      initial-value: 0deg;
+    }
+    @keyframes borderSpin {
+      0% { --border-angle: 0deg; }
+      100% { --border-angle: 360deg; }
+    }
+    .heroSecondary {
+      position: relative !important;
+      border: none !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      z-index: 1;
+      backdrop-filter: blur(8px);
+    }
+    .heroSecondary::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      padding: 1px;
+      border-radius: 9999px;
+      background: conic-gradient(from var(--border-angle), transparent 20%, rgba(255, 255, 255, 0.7) 50%, transparent 80%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: borderSpin 3s linear infinite;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .heroSecondary:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+  </style>
+</head>
+<body class="bg-background text-foreground antialiased selection:bg-indigo-500/30">
+
+  <div class="relative min-h-screen flex flex-col overflow-hidden">
+
+    <div id="shader-container" class="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[984px] h-[527px] opacity-90 bg-gray-950 blur-[82px] pointer-events-none z-0"></div>
+
+    <div class="relative z-10 flex flex-col flex-1 overflow-visible">
+
+      <!-- Navbar -->
+      <nav class="w-full py-5 px-8 flex flex-row justify-between items-center relative">
+        <div class="flex items-center gap-2">
+          <a href="index.html" class="font-logo-condensed font-bold text-2xl tracking-wide text-foreground cursor-pointer group logo-hover">
+            <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="transition-transform group-hover:scale-110">
+              <rect x="5" y="5" width="90" height="90" rx="20" fill="none" stroke="currentColor" stroke-width="6"/>
+              <rect x="25" y="30" width="15" height="10" rx="2" fill="currentColor"/>
+              <rect x="42" y="45" width="22" height="10" rx="2" fill="currentColor"/>
+              <rect x="62" y="60" width="13" height="10" rx="2" fill="currentColor"/>
+            </svg>
+            <span>RENOVATIONSTEPS.COM</span>
+          </a>
+        </div>
+        <div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-8 md:gap-12 text-foreground/90 font-medium text-sm">
+          <a href="features.html" class="hover:text-white transition nav-link-anim" data-i18n="nav_platform">Platform</a>
+          <a href="pricing.html" class="hover:text-white transition nav-link-anim" data-i18n="nav_pricing">Pricing</a>
+          <a href="contact.html" class="hover:text-white transition nav-link-anim" data-i18n="nav_contact">Contact</a>
+        </div>
+        <div class="flex items-center" style="gap: 30px;">
+          <div class="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5 border border-white/10">
+            <button onclick="applyLandingI18n('en')" class="text-[10px] font-bold hover:text-indigo-400 transition opacity-60 hover:opacity-100">EN</button>
+            <span class="w-[1px] h-3 bg-white/10"></span>
+            <button onclick="applyLandingI18n('sr')" class="text-[10px] font-bold hover:text-indigo-400 transition opacity-60 hover:opacity-100">SR</button>
+            <span class="w-[1px] h-3 bg-white/10"></span>
+            <button onclick="applyLandingI18n('ru')" class="text-[10px] font-bold hover:text-indigo-400 transition opacity-60 hover:opacity-100">RU</button>
+            <span class="w-[1px] h-3 bg-white/10"></span>
+            <button onclick="applyLandingI18n('zh')" class="text-[10px] font-bold hover:text-indigo-400 transition opacity-60 hover:opacity-100">ZH</button>
+          </div>
+        </div>
+      </nav>
+      <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-foreground/20 to-transparent mt-[3px]"></div>
+
+      <!-- Main -->
+      <main class="flex-1 flex flex-col items-center justify-center text-center px-4 w-full gap-5">
+        <div id="verifyIcon" class="w-20 h-20 rounded-full flex items-center justify-center border"></div>
+        <h1 id="verifyTitle" class="font-logo-condensed font-bold text-4xl tracking-wide text-foreground"></h1>
+        <p id="verifyDesc" class="text-foreground/50 text-base max-w-md leading-relaxed"></p>
+        <a id="verifyBtn" href="index.html" class="heroSecondary px-8 py-3 text-sm font-medium mt-2"></a>
+      </main>
+
+      <!-- Bottom bar -->
+      <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-foreground/20 to-transparent"></div>
+      <div class="w-full py-4 px-8 flex flex-row justify-between items-center">
+        <span class="text-xs text-foreground/20" style="opacity: 0.2; font-size: 0.525rem;" data-i18n="footer_copyright">© 2026 RENOVATIONSTEPS.COM — All rights reserved.</span>
+        <div class="flex items-center gap-8 md:gap-12 text-foreground/50 font-medium text-xs">
+          <a href="terms.html" class="hover:text-white transition nav-link-anim" data-i18n="nav_terms">Terms of Service</a>
+          <a href="privacy.html" class="hover:text-white transition nav-link-anim" data-i18n="nav_privacy">Privacy Policy</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/three.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/landing-i18n.js"></script>
+  <script>
+    lucide.createIcons();
+
+    // Shader
+    function initShader() {
+      const container = document.getElementById('shader-container');
+      if (!container || !window.THREE) return;
+      const THREE = window.THREE;
+      container.innerHTML = '';
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const mat = new THREE.ShaderMaterial({
+        uniforms: { u_time: { value: 0 }, u_res: { value: new THREE.Vector2(container.clientWidth, container.clientHeight) } },
+        vertexShader: `void main(){gl_Position=vec4(position,1.);}`,
+        fragmentShader: `uniform float u_time;uniform vec2 u_res;void main(){vec2 uv=gl_FragCoord.xy/u_res;float t=u_time*0.15;vec3 col=vec3(0.04,0.04,0.07);float b=sin(uv.x*3.+t)*0.5+0.5;b*=sin(uv.y*2.+t*0.7)*0.5+0.5;col+=vec3(0.04,0.03,0.12)*b*0.4;gl_FragColor=vec4(col,1.);}`
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
+      scene.add(mesh);
+      let s = Date.now();
+      (function animate() { requestAnimationFrame(animate); mat.uniforms.u_time.value = (Date.now()-s)/1000; renderer.render(scene, camera); })();
+      window.addEventListener('resize', () => { renderer.setSize(container.clientWidth, container.clientHeight); mat.uniforms.u_res.value.set(container.clientWidth, container.clientHeight); });
+    }
+    document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', initShader) : initShader();
+
+    // Render verification state based on ?status= param
+    (function renderStatus() {
+      const lang   = localStorage.getItem('landing_lang') || 'en';
+      const tr     = landingTranslations[lang] || landingTranslations.en;
+      const status = new URLSearchParams(window.location.search).get('status') || 'invalid';
+
+      const configs = {
+        success: {
+          icon: 'circle-check-big', iconColor: 'text-emerald-400', iconBg: 'bg-emerald-400/10 border-emerald-400/20',
+          title: tr.verify_success_title, desc: tr.verify_success_desc,
+          btnText: tr.verify_back, btnHref: 'index.html'
+        },
+        expired: {
+          icon: 'clock', iconColor: 'text-amber-400', iconBg: 'bg-amber-400/10 border-amber-400/20',
+          title: tr.verify_expired_title, desc: tr.verify_expired_desc,
+          btnText: tr.verify_signup_again, btnHref: 'index.html'
+        },
+        already: {
+          icon: 'circle-check-big', iconColor: 'text-indigo-400', iconBg: 'bg-indigo-400/10 border-indigo-400/20',
+          title: tr.verify_already_title, desc: tr.verify_already_desc,
+          btnText: tr.verify_back, btnHref: 'index.html'
+        },
+        invalid: {
+          icon: 'circle-x', iconColor: 'text-red-400', iconBg: 'bg-red-400/10 border-red-400/20',
+          title: tr.verify_invalid_title, desc: tr.verify_invalid_desc,
+          btnText: tr.verify_signup_again, btnHref: 'index.html'
+        }
+      };
+
+      const cfg = configs[status] || configs.invalid;
+      const iconEl = document.getElementById('verifyIcon');
+      iconEl.className = `w-20 h-20 rounded-full flex items-center justify-center border ${cfg.iconBg}`;
+      iconEl.innerHTML = `<i data-lucide="${cfg.icon}" class="w-9 h-9 ${cfg.iconColor}"></i>`;
+      document.getElementById('verifyTitle').textContent = cfg.title;
+      document.getElementById('verifyDesc').textContent  = cfg.desc;
+      const btn = document.getElementById('verifyBtn');
+      btn.textContent = cfg.btnText;
+      btn.href = cfg.btnHref;
+      lucide.createIcons();
+    })();
+  </script>
+</body>
+</html>

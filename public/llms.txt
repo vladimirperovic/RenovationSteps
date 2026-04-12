@@ -1,0 +1,23 @@
+# RENOVATIONSTEPS.COM
+
+The ultimate tool for project planning and tracking. Complete control and management of all your renovation projects.
+
+## Project Vision
+RenovationSteps.com is designed to bridge the gap between complex construction management and accessible home improvement planning. It provides a highly visual, interactive interface for managing phases, tasks, costs, and teams.
+
+## Key Modules
+- **Phases & Tasks**: Organize the renovation workflow from demolition to final touches.
+- **Budgeting**: Real-time cost tracking and financial planning.
+- **Team Collaboration**: Manage workers and assign responsibilities.
+- **Visual Kanban**: Drag-and-drop task management.
+
+## Core Pages
+- [Home](https://renovationsteps.com/): Product overview and main call to action.
+- [Platform Features](https://renovationsteps.com/features.html): Detailed technical breakdown of the planning tools.
+- [Pricing](https://renovationsteps.com/pricing.html): Tiered plans for individuals and enterprise clients.
+- [Contact](https://renovationsteps.com/contact.html): Direct line for support and custom inquiries.
+
+## Technical Stack
+- Frontend: HTML5, Tailwind CSS, Three.js (WebGL Shaders), Lucide Icons.
+- i18n: Multi-language support (EN, SR, RU, ZH).
+- Backend: Node.js, Express, Prisma, PostgreSQL.

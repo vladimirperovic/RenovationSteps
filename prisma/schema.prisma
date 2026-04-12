@@ -1,0 +1,168 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  password  String?
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id            String   @id @default(uuid())
+  title         String?
+  client_name   String?
+  address       String?
+  total_budget  Float?
+  exchange_rate Float?
+  start_date    String?
+  end_date      String?
+  notes         String?
+  share_token   String?
+  createdAt     DateTime @default(now())
+  phases        Phase[]
+  tasks         Task[]
+  expenses      Expense[]
+  materials     Material[]
+  payments      Payment[]
+  logs          Log[]
+  punch_list    PunchList[]
+  changes       Change[]
+  workers       Worker[]
+}
+
+model Phase {
+  id        String     @id @default(uuid())
+  name      String?
+  status    String?
+  start     String?
+  end       String?
+  progress  Int?
+  notes     String?
+  project   Project    @relation(fields: [projectId], references: [id])
+  projectId String
+  tasks     Task[]
+  materials Material[]
+  payments  Payment[]
+}
+
+model Task {
+  id             String   @id @default(uuid())
+  title          String?
+  title_sr       String?
+  title_ru       String?
+  title_zh       String?
+  phase          Phase?   @relation(fields: [phaseId], references: [id])
+  phaseId        String?
+  worker         Worker?  @relation(fields: [workerId], references: [id])
+  workerId       String?
+  lead_time      Int?
+  cost           Float?
+  advance_amount Float?
+  advance_paid   Boolean?
+  notes          String?
+  status         String?
+  done           Boolean?
+  priority       String?
+  start_date     String?
+  end_date       String?
+  project        Project  @relation(fields: [projectId], references: [id])
+  projectId      String
+}
+
+model Worker {
+  id        String    @id @default(uuid())
+  name      String?
+  trade     String?
+  phone     String?
+  email     String?
+  rate      String?
+  rating    Int?
+  notes     String?
+  project   Project   @relation(fields: [projectId], references: [id])
+  projectId String
+  tasks     Task[]
+  payments  Payment[]
+}
+
+model Expense {
+  id             String   @id @default(uuid())
+  category       String?
+  desc           String?
+  amount         Float?
+  date           String?
+  paid           Boolean?
+  advance_amount Float?
+  advance_paid   Boolean?
+  recipient      String?
+  project        Project  @relation(fields: [projectId], references: [id])
+  projectId      String
+}
+
+model Material {
+  id             String   @id @default(uuid())
+  name           String?
+  phase          Phase?   @relation(fields: [phaseId], references: [id])
+  phaseId        String?
+  quantity       Float?
+  unit           String?
+  price          Float?
+  store          String?
+  status         String?
+  order_by_date  String?
+  delivered_date String?
+  notes          String?
+  project        Project  @relation(fields: [projectId], references: [id])
+  projectId      String
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  desc           String?
+  amount         Float?
+  percentage     Float?
+  due_date       String?
+  paid_date      String?
+  paid           Boolean?
+  advance_amount Float?
+  advance_paid   Boolean?
+  phase          Phase?   @relation(fields: [phaseId], references: [id])
+  phaseId        String?
+  worker         Worker?  @relation(fields: [workerId], references: [id])
+  workerId       String?
+  project        Project  @relation(fields: [projectId], references: [id])
+  projectId      String
+}
+
+model Log {
+  id        String  @id @default(uuid())
+  text      String?
+  image     String?
+  date      String?
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+}
+
+model PunchList {
+  id        String   @id @default(uuid())
+  text      String?
+  done      Boolean?
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+}
+
+model Change {
+  id          String  @id @default(uuid())
+  desc        String?
+  amount      Float?
+  date        String?
+  project     Project @relation(fields: [projectId], references: [id])
+  projectId   String
+}

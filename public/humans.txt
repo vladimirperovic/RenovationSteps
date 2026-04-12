@@ -1,0 +1,21 @@
+/* RENOVATIONSTEPS.COM TEAM */
+{
+  "company": "RenovationSteps",
+  "contact": "vladimir.perovic@gmail.com",
+  "website": "https://renovationsteps.com",
+  "social": {
+    "github": "https://github.com/vladimirperovic/RenovationSteps"
+  },
+  "technology": {
+    "frontend": "HTML, CSS, JavaScript, Tailwind",
+    "backend": "Node.js, Express",
+    "database": "PostgreSQL, Prisma ORM"
+  },
+  "build": "2026-04-12"
+}
+
+/* THANKS */
+- Three.js for the background shader
+- Tailwind CSS for styling
+- Prisma for database management
+- Resend for email services

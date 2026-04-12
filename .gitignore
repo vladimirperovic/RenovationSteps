@@ -1,0 +1,13 @@
+node_modules/
+data.img.raw
+swap.img
+# Prisma SQLite database and generated client
+prisma/dev.db
+node_modules/@prisma/client/
+.env
+.claude/
+*.log
+.DS_Store
+# Paid templates — not included in open source
+data/templates/
+data/_backup_json/
