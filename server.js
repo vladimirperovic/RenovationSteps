@@ -66,6 +66,15 @@ const handleGetAll = async (projectId, token = null) => {
   });
   if (!proj) throw new Error('Project not found: ' + projectId);
 
+  let isPaidUser = TEMPLATE_TOKENS.includes(token);
+  if (!isPaidUser && token && token.startsWith('token-')) {
+    const userId = token.split('token-')[1];
+    try {
+      const u = await prisma.user.findUnique({ where: { id: userId } });
+      if (u && u.isPaid) isPaidUser = true;
+    } catch { /* ignore */ }
+  }
+
   // Map Prisma camelCase relations to frontend snake_case
   const mapTask = t => ({ ...t, phase_id: t.phaseId, worker_id: t.workerId });
   const mapMaterial = m => ({ ...m, phase_id: m.phaseId });
@@ -74,6 +83,7 @@ const handleGetAll = async (projectId, token = null) => {
   return {
     ok: true,
     is_admin: ADMIN_TOKENS.includes(token),
+    can_use_templates: isPaidUser,
     data: {
       plan: {
         title: proj.title || '',
@@ -421,8 +431,14 @@ app.post('/api/project/:id', async (req, res) => {
         return res.json({ projects: projects.map(p => ({ id: p.id, title: p.title || '' })) });
       }
       case 'create_project': {
+        const token = extractToken(req);
+        const userId = (token && token.startsWith('token-')) ? token.split('token-')[1] : null;
         const pid = body.project_id || `proj_${Date.now().toString(36)}`;
-        const p = await prisma.project.create({ data: { id: pid, title: body.title || '' } });
+        const p = await prisma.project.create({ data: { 
+          id: pid, 
+          title: body.title || '',
+          userId: userId
+        } });
         return res.json({ ok: true, id: p.id });
       }
       case 'sync_template':
@@ -463,12 +479,15 @@ app.get('/api/projects', async (req, res) => {
 
 app.post('/api/projects', async (req, res) => {
   try {
+    const token = extractToken(req);
+    const userId = (token && token.startsWith('token-')) ? token.split('token-')[1] : null;
     const p = await prisma.project.create({ data: {
       title: req.body.title, client_name: req.body.client_name,
       address: req.body.address, total_budget: req.body.total_budget,
       exchange_rate: req.body.exchange_rate,
       start_date: req.body.start_date, end_date: req.body.end_date,
-      notes: req.body.notes
+      notes: req.body.notes,
+      userId: userId
     }});
     return res.json({ ok: true, project: p });
   } catch (e) { return res.status(500).json({ error: e.message }); }
@@ -562,7 +581,13 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (user && user.password && bcrypt.compareSync(password, user.password)) {
-      return res.json({ ok: true, token: `token-${user.id}`, user: { id: user.id, name: user.name, email: user.email } });
+      // Update last login
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLogin: new Date() }
+      });
+
+      res.json({ ok: true, token: 'token-' + user.id, user: { id: user.id, name: user.name, email: user.email, isPaid: user.isPaid } });
     }
   } catch { /* ignore */ }
   return res.status(401).json({ ok: false, error: 'Invalid credentials' });
@@ -610,7 +635,7 @@ app.post('/api/auth/signup', async (req, res) => {
   if (!apiKey || apiKey.startsWith('re_replace')) {
     // No email service — activate account immediately
     try {
-      await prisma.user.create({ data: { name, email, password: hashedPassword } });
+      await prisma.user.create({ data: { name, email, password: hashedPassword, isVerified: true } });
     } catch { return res.status(500).json({ error: 'Database error.' }); }
     return res.json({ ok: true, verified: true });
   }
@@ -667,7 +692,7 @@ app.get('/api/auth/verify', async (req, res) => {
       await savePending(pending.filter(p => p.token !== token));
       return res.redirect('/verify.html?status=already');
     }
-    await prisma.user.create({ data: { name: entry.name, email: entry.email, password: entry.hashedPassword } });
+    await prisma.user.create({ data: { name: entry.name, email: entry.email, password: entry.hashedPassword, isVerified: true } });
   } catch {
     return res.redirect('/verify.html?status=invalid');
   }
@@ -795,7 +820,17 @@ app.post('/api/contact', async (req, res) => {
 // Template importer
 // ------------------------------------------------------------------------
 app.post('/api/template/import', async (req, res) => {
-  if (!false) {
+  const token = extractToken(req);
+  let isPaidUser = TEMPLATE_TOKENS.includes(token);
+  if (!isPaidUser && token && token.startsWith('token-')) {
+    const userId = token.split('token-')[1];
+    try {
+      const u = await prisma.user.findUnique({ where: { id: userId } });
+      if (u && u.isPaid) isPaidUser = true;
+    } catch { /* ignore */ }
+  }
+
+  if (!isPaidUser) {
     return res.status(403).json({ ok: false, error: 'Templates require a valid purchase.' });
   }
   const tplName = req.body?.template || 'three_bedroom';
@@ -807,12 +842,16 @@ app.post('/api/template/import', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'Invalid template' });
     }
 
+    const tokenIn = extractToken(req);
+    const userIdIn = (tokenIn && tokenIn.startsWith('token-')) ? tokenIn.split('token-')[1] : null;
+
     const proj = await prisma.project.create({ data: {
       title: template.plan.title, client_name: template.plan.client_name,
       address: template.plan.address, total_budget: template.plan.total_budget,
       exchange_rate: template.plan.exchange_rate,
       start_date: template.plan.start_date, end_date: template.plan.end_date,
-      notes: template.plan.notes
+      notes: template.plan.notes,
+      userId: userIdIn
     }});
 
     // Map phases (old ID → new Prisma ID)
@@ -900,6 +939,10 @@ app.get('/api/admin/stats', async (req, res) => {
     const path = require('path');
     const fs = require('fs').promises;
 
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const loadAvg = os.loadavg();
+
     const [userCount, projectCount, phaseCount, taskCount] = await Promise.all([
       prisma.user.count(),
       prisma.project.count(),
@@ -981,10 +1024,35 @@ app.get('/api/admin/users', async (req, res) => {
   const skip  = (page - 1) * limit;
   try {
     const [users, total] = await Promise.all([
-      prisma.user.findMany({ orderBy: { createdAt: 'desc' }, skip, take: limit, select: { id: true, name: true, email: true, createdAt: true } }),
+      prisma.user.findMany({ 
+        orderBy: { createdAt: 'desc' }, 
+        skip, 
+        take: limit, 
+        select: { 
+          id: true, 
+          name: true, 
+          email: true, 
+          isPaid: true, 
+          isVerified: true,
+          lastLogin: true,
+          createdAt: true,
+          _count: { select: { projects: true } }
+        } 
+      }),
       prisma.user.count()
     ]);
     res.json({ ok: true, users, total, page, pages: Math.ceil(total / limit) });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+app.put('/api/admin/users/:id/paid', async (req, res) => {
+  if (!ADMIN_TOKENS.includes(extractToken(req))) return res.status(403).json({ ok: false, error: 'Forbidden' });
+  try {
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data: { isPaid: req.body.isPaid === true }
+    });
+    res.json({ ok: true, user });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 

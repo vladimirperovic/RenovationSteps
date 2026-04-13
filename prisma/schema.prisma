@@ -12,7 +12,11 @@ model User {
   name      String?
   email     String   @unique
   password  String?
+  isPaid    Boolean  @default(false)
+  isVerified Boolean @default(false)
+  lastLogin DateTime?
   createdAt DateTime @default(now())
+  projects  Project[]
 }
 
 model Project {
@@ -27,6 +31,8 @@ model Project {
   notes         String?
   share_token   String?
   createdAt     DateTime @default(now())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
   phases        Phase[]
   tasks         Task[]
   expenses      Expense[]

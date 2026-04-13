@@ -260,14 +260,17 @@ function renderOverview() {
   if (window.lucide) lucide.createIcons();
 
   // ── Update sidebar user info ──────────────────────────────────────────────
-  const clientName = appData.plan?.client_name || t('lbl_client_name');
-  if (appData.plan?.client_name) {
+  let userLabel = appData.plan?.client_name || t('lbl_client_name');
+  if (IS_ADMIN) {
+    userLabel = t('role_admin');
+  } else if (appData.plan?.client_name) {
     localStorage.setItem('userName', appData.plan.client_name);
   }
+  
   const avatarEl = document.getElementById('blUserAvatar');
-  if (avatarEl) avatarEl.textContent = clientName.charAt(0).toUpperCase();
+  if (avatarEl) avatarEl.textContent = userLabel.charAt(0).toUpperCase();
   const nameEl = document.getElementById('blUserName');
-  if (nameEl) nameEl.textContent = clientName;
+  if (nameEl) nameEl.textContent = userLabel;
 
   // ── Cashflow text (upcoming 7-day obligations) ────────────────────────────
   const cfEl = document.getElementById('cashflowText');
@@ -325,77 +328,131 @@ function renderOverview() {
 function renderPhases() {
   const el = document.getElementById('phasesList');
   if (!el) return;
+  
   if (!appData.phases || !appData.phases.length) {
-    el.innerHTML = `<div class="bl-card"><div class="bl-card-body"><div class="bl-empty">${t('no_phases_empty')}</div></div></div>`;
+    el.innerHTML = `
+      <button class="bl-ph-add-inline" onclick="openAddPhaseModal()">+ ${t('add_phase')}</button>
+      <div class="bl-card"><div class="bl-card-body"><div class="bl-empty">${t('no_phases_empty')}</div></div></div>
+    `;
     return;
   }
-  el.innerHTML = appData.phases.map((ph, i) => `
-    <div class="bl-phase-card bl-phase-${ph.status}">
-      <div class="bl-phase-card-header">
-        <div class="bl-phase-card-left">
-          <span class="bl-phase-num">${String(i+1).padStart(2,'0')}</span>
-          <div>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-              <div class="bl-phase-name">${esc(phaseTitle(ph))}</div>
-              <button class="bl-icon-btn bl-icon-btn-info" onclick="editPhase('${ph.id}')" title="${t('lbl_notes')}" style="width:20px;height:20px;font-size:0.65rem;">ℹ</button>
+
+  const phasesHtml = appData.phases.map((ph, i) => {
+    const phaseTasks = appData.tasks.filter(tk => tk.phase_id === ph.id);
+    const totalCost = phaseTasks.reduce((sum, tk) => sum + Number(tk.cost || 0), 0);
+    const uniqueWorkers = [...new Set(phaseTasks.map(tk => tk.worker_id).filter(id => id))]
+      .map(id => appData.workers.find(w => w.id === id))
+      .filter(w => w);
+
+    const workersHtml = uniqueWorkers.length > 0 
+      ? `
+        <div style="display:flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.03); padding:0.25rem 0.6rem; border-radius:6px; border:1px solid var(--mist);">
+          <span style="font-size:0.75rem;">👷</span>
+          <span style="font-size:0.7rem; color:var(--text-secondary); white-space:nowrap;">
+            ${t('needed_workers')} ${uniqueWorkers.length} ${t('workers_label')}:
+            <span style="margin-left:0.25rem;">
+              ${uniqueWorkers.map(w => `<a href="#" onclick="editWorker('${w.id}'); return false;" style="color:var(--accent-main); text-decoration:none; font-weight:600;">${esc(w.name)}</a>`).join(', ')}
+            </span>
+          </span>
+        </div>`
+      : '';
+
+    const costHtml = totalCost > 0 
+      ? `
+        <div style="display:flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.03); padding:0.25rem 0.6rem; border-radius:6px; border:1px solid var(--mist);">
+          <span style="font-size:0.75rem;">💰</span>
+          <span style="font-size:0.7rem; color:var(--text-secondary); white-space:nowrap;">
+            ${t('total_cost_label')}: <span style="color:var(--text-primary); font-weight:700; margin-left:0.2rem;">${fmt(totalCost)}</span>
+          </span>
+        </div>`
+      : '';
+
+    const tasksListHtml = phaseTasks.length > 0 
+      ? `
+        <button class="bl-task-add-inline" onclick="openAddTaskModal('${ph.id}')">+ ${t('add_task')}</button>
+        ${phaseTasks.map(tk => {
+          const wk = appData.workers.find(w => w.id === tk.worker_id);
+          const prioStyles = {
+            high: 'background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; color:#ef4444;',
+            normal: 'background:rgba(234, 179, 8, 0.15); border:1px solid #eab308; color:#eab308;',
+            low: 'background:rgba(10, 132, 255, 0.15); border:1px solid #0a84ff; color:#0a84ff;'
+          };
+          const statusChipStyle = {
+            todo:        'background:var(--frost);border-color:var(--mist);color:var(--silver);',
+            in_progress: 'background:rgba(10,132,255,0.1);border-color:#0a84ff;color:#0a84ff;',
+            done:        'background:rgba(48,209,87,0.07);border-color:rgba(48,209,87,0.4);color:#30d158;'
+          };
+          const hasCost = tk.cost && Number(tk.cost) > 0;
+          return `<div class="bl-ph-task ${tk.status === 'done' ? 'bl-ph-task-done' : ''}" style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0.5rem;border-radius:0.4rem;margin-bottom:0.25rem;min-height:0;">
+            <span class="bl-ph-task-title" onclick="editTask('${tk.id}')" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.8rem;cursor:pointer;">${esc(taskTitle(tk))}</span>
+            <span style="color:var(--mist);font-size:0.8rem;margin:0 0.1rem;opacity:0.5;">|</span>
+            <button class="bl-ph-meta-chip" onclick="showTaskDetail('${esc(tk.title)}')" title="${t('task_detail_title')}" style="margin:0;padding:2px 6px;font-size:0.6rem;cursor:pointer;border:1px solid var(--mist);background:var(--frost);color:var(--graphite);font-weight:600;white-space:nowrap;border-radius:4px;">${t('label_how_it_works')}</button>
+            <div style="display:flex;align-items:center;gap:0.3rem;flex-shrink:0;margin-left:auto;">
+              <select onchange="setTaskPriority('${tk.id}', this.value)" class="bl-ph-meta-chip" style="cursor:pointer;appearance:none;outline:none;margin:0;${prioStyles[tk.priority]||'background:var(--frost);border-color:var(--mist);color:var(--silver);'}">
+                <option value="high" ${tk.priority==='high'?'selected':''}>↑ High</option>
+                <option value="normal" ${tk.priority==='normal'?'selected':''}>— Normal</option>
+                <option value="low" ${tk.priority==='low'?'selected':''}>↓ Low</option>
+              </select>
+              ${wk ? `<span class="bl-ph-meta-chip" onclick="editWorker('${wk.id}')" style="cursor:pointer;margin:0;padding:0.1rem 0.4rem;font-size:0.65rem;">👷 ${esc(wk.name)}</span>` : ''}
+              ${hasCost ? `<span class="bl-ph-meta-chip bl-ph-meta-cost" style="margin:0;padding:0.1rem 0.4rem;font-size:0.65rem;">💰 ${fmt(Number(tk.cost))}</span>` : ''}
+              <select onchange="setTaskStatus('${tk.id}', this.value)" class="bl-ph-meta-chip" style="cursor:pointer;appearance:none;outline:none;margin:0;${statusChipStyle[tk.status]||statusChipStyle.todo}">
+                <option value="todo" ${tk.status==='todo'?'selected':''}>${t('status_todo')}</option>
+                <option value="in_progress" ${tk.status==='in_progress'?'selected':''}>${t('status_active')}</option>
+                <option value="done" ${tk.status==='done'?'selected':''}>${t('status_done')}</option>
+              </select>
+              <div style="display:flex;gap:0.15rem;border-left:1px solid var(--mist);padding-left:0.35rem;">
+                <button class="bl-icon-btn" onclick="editTask('${tk.id}')" title="${t('btn_save')}" style="width:20px;height:20px;font-size:0.7rem;">✎</button>
+                <button class="bl-icon-btn bl-icon-btn-danger" onclick="deleteTask('${tk.id}')" title="${t('confirm_delete_task')}" style="width:20px;height:20px;font-size:0.8rem;">×</button>
+              </div>
             </div>
-            ${ph.start||ph.end ? `<div class="bl-phase-dates">${ph.start||'?'} → ${ph.end||'?'}</div>` : ''}
+          </div>`;
+        }).join('')}
+        <button class="bl-task-add-inline" onclick="openAddTaskModal('${ph.id}')">+ ${t('add_task')}</button>
+      `
+      : `<button class="bl-task-add-inline" onclick="openAddTaskModal('${ph.id}')" style="opacity:1; background:rgba(255,255,255,0.02);">+ ${t('add_task')}</button>`;
+
+    return `
+      <div class="bl-phase-card bl-phase-${ph.status}">
+        <div class="bl-phase-card-header">
+          <div class="bl-phase-card-left">
+            <span class="bl-phase-num">${String(i+1).padStart(2,'0')}</span>
+            <div>
+              <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem; row-gap:0.4rem;">
+                <div class="bl-phase-name">${esc(phaseTitle(ph))}</div>
+                <button class="bl-icon-btn bl-icon-btn-info" onclick="editPhase('${ph.id}')" title="${t('lbl_notes')}" style="width:20px;height:20px;font-size:0.65rem;">ℹ</button>
+                <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                  ${workersHtml}
+                  ${costHtml}
+                </div>
+              </div>
+              ${ph.start||ph.end ? `<div class="bl-phase-dates">${ph.start||'?'} → ${ph.end||'?'}</div>` : ''}
+            </div>
+          </div>
+          <div class="bl-phase-card-right">
+            <span class="bl-status-badge bl-status-${ph.status}">${statusLabel(ph.status)}</span>
+            <button class="bl-icon-btn" onclick="editPhase('${ph.id}')" title="Edit" style="font-size:0.75rem;">✎</button>
+            <button class="bl-icon-btn bl-icon-btn-danger" onclick="deletePhase('${ph.id}')" title="Delete" style="font-size:0.9rem;">×</button>
           </div>
         </div>
-        <div class="bl-phase-card-right">
-          <span class="bl-status-badge bl-status-${ph.status}">${statusLabel(ph.status)}</span>
-          <button class="bl-icon-btn" onclick="editPhase('${ph.id}')" title="Edit" style="font-size:0.75rem;">✎</button>
-          <button class="bl-icon-btn bl-icon-btn-danger" onclick="deletePhase('${ph.id}')" title="Delete" style="font-size:0.9rem;">×</button>
+        <div class="bl-phase-progress">
+          <div class="bl-progress-track"><div class="bl-progress-fill" style="width:${ph.progress||0}%"></div></div>
+          <span class="bl-progress-label">${ph.progress||0}%</span>
+        </div>
+        ${ph.notes ? `<div class="bl-phase-notes">${esc(phaseNotes(ph))}</div>` : ''}
+        <div class="bl-phase-tasks" style="margin-top:1rem;border-top:1px solid var(--mist);padding-top:1rem;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--silver); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.75rem;">${t('stat_tasks')}</div>
+          ${tasksListHtml}
         </div>
       </div>
-      <div class="bl-phase-progress">
-        <div class="bl-progress-track"><div class="bl-progress-fill" style="width:${ph.progress||0}%"></div></div>
-        <span class="bl-progress-label">${ph.progress||0}%</span>
-      </div>
-      ${ph.notes ? `<div class="bl-phase-notes">${esc(phaseNotes(ph))}</div>` : ''}
-      <div class="bl-phase-tasks" style="margin-top:1rem;border-top:1px solid var(--mist);padding-top:1rem;">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--silver); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.75rem;">${t('stat_tasks')}</div>
-        ${appData.tasks.filter(tk => tk.phase_id === ph.id).map(tk => {
-           const wk       = appData.workers.find(w => w.id === tk.worker_id);
-           const prioStyles = {
-             high: 'background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; color:#ef4444;',
-             normal: 'background:rgba(234, 179, 8, 0.15); border:1px solid #eab308; color:#eab308;',
-             low: 'background:rgba(10, 132, 255, 0.15); border:1px solid #0a84ff; color:#0a84ff;'
-           };
-           const statusBg = { todo:'rgba(0,0,0,0.05)', in_progress:'rgba(10,132,255,0.1)', done:'rgba(48,209,88,0.1)' };
-           const statusCl = { todo:'var(--silver)', in_progress:'#0a84ff', done:'#30d158' };
-           const hasCost  = tk.cost && Number(tk.cost) > 0;
-           const statusChipStyle = {
-             todo:        'background:var(--frost);border-color:var(--mist);color:var(--silver);',
-             in_progress: 'background:rgba(10,132,255,0.1);border-color:#0a84ff;color:#0a84ff;',
-             done:        'background:rgba(48,209,88,0.07);border-color:rgba(48,209,88,0.4);color:#30d158;'
-           };
-           return `<div class="bl-ph-task ${tk.status === 'done' ? 'bl-ph-task-done' : ''}" style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0.5rem;border-radius:0.4rem;margin-bottom:0.25rem;min-height:0;">
-             <span class="bl-ph-task-title" onclick="editTask('${tk.id}')" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.8rem;cursor:pointer;">${esc(taskTitle(tk))}</span>
-             <span style="color:var(--mist);font-size:0.8rem;margin:0 0.1rem;opacity:0.5;">|</span>
-             <button class="bl-ph-meta-chip" onclick="showTaskDetail('${esc(tk.title)}')" title="${t('task_detail_title')}" style="margin:0;padding:2px 6px;font-size:0.6rem;cursor:pointer;border:1px solid var(--mist);background:var(--frost);color:var(--graphite);font-weight:600;white-space:nowrap;border-radius:4px;">${t('label_how_it_works')}</button>
-             <div style="display:flex;align-items:center;gap:0.3rem;flex-shrink:0;margin-left:auto;">
-               <select onchange="setTaskPriority('${tk.id}', this.value)" class="bl-ph-meta-chip" style="cursor:pointer;appearance:none;outline:none;margin:0;${prioStyles[tk.priority]||'background:var(--frost);border-color:var(--mist);color:var(--silver);'}">
-                 <option value="high" ${tk.priority==='high'?'selected':''}>↑ High</option>
-                 <option value="normal" ${tk.priority==='normal'?'selected':''}>— Normal</option>
-                 <option value="low" ${tk.priority==='low'?'selected':''}>↓ Low</option>
-               </select>
-               ${wk ? `<span class="bl-ph-meta-chip" onclick="editWorker('${wk.id}')" style="cursor:pointer;margin:0;padding:0.1rem 0.4rem;font-size:0.65rem;">👷 ${esc(wk.name)}</span>` : ''}
-               ${hasCost ? `<span class="bl-ph-meta-chip bl-ph-meta-cost" style="margin:0;padding:0.1rem 0.4rem;font-size:0.65rem;">💰 ${fmt(Number(tk.cost))}</span>` : ''}
-               <select onchange="setTaskStatus('${tk.id}', this.value)" class="bl-ph-meta-chip" style="cursor:pointer;appearance:none;outline:none;margin:0;${statusChipStyle[tk.status]||statusChipStyle.todo}">
-                 <option value="todo" ${tk.status==='todo'?'selected':''}>${t('status_todo')}</option>
-                 <option value="in_progress" ${tk.status==='in_progress'?'selected':''}>${t('status_active')}</option>
-                 <option value="done" ${tk.status==='done'?'selected':''}>${t('status_done')}</option>
-               </select>
-               <div style="display:flex;gap:0.15rem;border-left:1px solid var(--mist);padding-left:0.35rem;">
-                 <button class="bl-icon-btn" onclick="editTask('${tk.id}')" title="${t('btn_save')}" style="width:20px;height:20px;font-size:0.7rem;">✎</button>
-                 <button class="bl-icon-btn bl-icon-btn-danger" onclick="deleteTask('${tk.id}')" title="${t('confirm_delete_task')}" style="width:20px;height:20px;font-size:0.8rem;">×</button>
-               </div>
-             </div>
-           </div>`;
-        }).join('') || `<div style="font-size:0.8rem;color:var(--graphite);padding:0.5rem 0;">${t('no_tasks')}</div>`}
-      </div>
-    </div>`).join('');
+      <button class="bl-ph-add-inline" onclick="openAddPhaseModal()">+ ${t('add_phase')}</button>
+    `;
+  }).join('');
+
+  el.innerHTML = `
+    <button class="bl-ph-add-inline" onclick="openAddPhaseModal()">+ ${t('add_phase')}</button>
+    ${phasesHtml}
+  `;
+
   if (window.lucide) lucide.createIcons();
 }
 

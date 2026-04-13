@@ -78,9 +78,13 @@ function switchTab(tabId) {
 
 document.querySelectorAll('.bl-nav-item').forEach(a => {
   a.addEventListener('click', e => {
-    e.preventDefault();
-    switchTab(a.dataset.tab);
-    if (window.innerWidth < 900) closeSidebar();
+    // Only intercept if it's a tab switcher link (has data-tab)
+    if (a.dataset.tab) {
+      e.preventDefault();
+      switchTab(a.dataset.tab);
+      if (window.innerWidth < 900) closeSidebar();
+    }
+    // Otherwise let the normal <a href="..."> browser navigation happen
   });
 });
 
@@ -104,13 +108,14 @@ function toast(msg, type='ok') {
 }
 
 // ---- PHASES CRUD ----
-document.getElementById('addPhaseBtn').addEventListener('click', () => {
+function openAddPhaseModal() {
   document.getElementById('phaseId').value = '';
   document.getElementById('phaseModalTitle').textContent = t('add_phase_title');
   document.getElementById('phaseForm').reset();
   document.getElementById('progressVal').textContent = '0';
   openModal('phaseModal');
-});
+}
+document.getElementById('addPhaseBtn').addEventListener('click', openAddPhaseModal);
 
 document.getElementById('phaseForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -202,12 +207,17 @@ function editWorker(id) {
 async function deleteWorker(id) { if (!confirm(t('confirm_delete_worker'))) return; await api('delete_worker',{id}); await init(); toast(t('toast_worker_deleted'),'err'); }
 
 // ---- TASKS CRUD ----
-document.getElementById('addTaskBtn').addEventListener('click', () => { 
+function openAddTaskModal(phaseId) {
   document.getElementById('taskId').value=''; 
   document.getElementById('taskForm').reset(); 
+  if (phaseId) {
+    const sel = document.getElementById('taskPhase');
+    if (sel) sel.value = phaseId;
+  }
   document.getElementById('taskModalTitle').textContent = t('add_task_title') || 'Add Task'; 
   openModal('taskModal'); 
-});
+}
+document.getElementById('addTaskBtn').addEventListener('click', () => openAddTaskModal());
 
 document.getElementById('taskForm').addEventListener('submit', async e => {
   e.preventDefault();

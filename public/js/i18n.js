@@ -249,7 +249,10 @@ const LANG = {
     tpl_include_workers_label: 'Import and link workers & task prices',
     tpl_include_materials_label: 'Import required materials in:',
     onboard_auto_schedule: 'Auto-schedule phase dates',
-    nav_map: 'Mind Map'
+    nav_map: 'Mind Map',
+    needed_workers: 'Needed',
+    workers_label: 'workers',
+    total_cost_label: 'Total Money'
   },
   sr: {
     nav_overview: 'Pregled', nav_phases: 'Etape', nav_finances: 'Finansije',
@@ -482,7 +485,10 @@ const LANG = {
     tpl_import_options: 'Opcije uvoza',
     tpl_include_workers_label: 'Uvezi i poveži majstore i cene zadataka',
     tpl_include_materials_label: 'Uvezi potrebne materijale na:',
-    onboard_auto_schedule: 'Automatski rasporedi datume etapa'
+    onboard_auto_schedule: 'Automatski rasporedi datume etapa',
+    needed_workers: 'Potrebno',
+    workers_label: 'radnika',
+    total_cost_label: 'Ukupno novca'
   }
   ,ru: {
     nav_overview: 'Обзор', nav_phases: 'Этапы', nav_finances: 'Финансы', nav_budget: 'Бюджет',
@@ -681,7 +687,10 @@ const LANG = {
     tpl_import_options: 'Параметры импорта',
     tpl_include_workers_label: 'Импортировать мастеров и стоимость задач',
     tpl_include_materials_label: 'Импортировать материалы на:',
-    onboard_auto_schedule: 'Автоматически распределить даты этапов'
+    onboard_auto_schedule: 'Автоматически распределить даты этапов',
+    needed_workers: 'Нужно',
+    workers_label: 'мастеров',
+    total_cost_label: 'Итого денег'
   }
   ,zh: {
     nav_overview: '概览', nav_phases: '阶段', nav_finances: '财务', nav_budget: '预算',
@@ -880,7 +889,10 @@ const LANG = {
     tpl_import_options: '导入选项',
     tpl_include_workers_label: '导入并关联工人及任务价格',
     tpl_include_materials_label: '导入所需材料（语言）：',
-    onboard_auto_schedule: '自动安排阶段日期'
+    onboard_auto_schedule: '自动安排阶段日期',
+    needed_workers: '所需',
+    workers_label: '工人',
+    total_cost_label: '总金额'
   }
 };
 

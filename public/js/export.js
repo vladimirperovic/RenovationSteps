@@ -1,122 +1,145 @@
 // =============================================
-// PDF EXPORT
+// PDF EXPORT (Phases Only)
 // =============================================
 function exportPDF() {
-  const p = appData.plan || {};
-  const phases = appData.phases || [];
-  const expenses = appData.expenses || [];
-  const workers = appData.workers || [];
-  const payments = appData.payments || [];
-  const totalExpenses = expenses.reduce((s,e) => s+Number(e.amount||0), 0);
-  const paidExpenses  = expenses.filter(e=>e.paid).reduce((s,e) => s+Number(e.amount||0), 0);
-  const totalPayments = payments.reduce((s,pm) => s+Number(pm.amount||0), 0);
-  const paidPayments  = payments.filter(pm=>pm.paid).reduce((s,pm) => s+Number(pm.amount||0), 0);
+  const data = (typeof appData !== 'undefined') ? appData : {};
+  const p = data.plan || {};
+  const phases = data.phases || [];
+  
+  // 1. Phases & Tasks HTML
+  let phasesHtml = '';
+  phases.forEach(ph => {
+    let tasksHtml = '';
+    let phaseTotalCost = 0;
+    const phaseTasks = (data.tasks || []).filter(tk => tk.phase_id === ph.id);
+    
+    if (phaseTasks.length) {
+      tasksHtml = phaseTasks.map(tk => {
+        const wk = (data.workers || []).find(w => w.id === tk.worker_id);
+        const costVal = Number(tk.cost || 0);
+        if (costVal > 0) phaseTotalCost += costVal;
 
-  const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:800px;margin:0 auto;color:#1c1c1e;">
-      <!-- Header -->
-      <div style="border-bottom:3px solid #1c1c1e;padding-bottom:1.5rem;margin-bottom:2rem;">
-        <div style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:#636366;margin-bottom:0.5rem;">AA / STUDIO — Project Report</div>
-        <h1 style="font-size:2rem;font-weight:800;margin:0 0 0.25rem;">${esc(p.title||'Project Report')}</h1>
-        <div style="color:#636366;font-size:0.875rem;">${esc(p.address||'')} &nbsp;|&nbsp; Generated: ${new Date().toLocaleDateString(currentLang==='sr'?'sr-RS':'en-US')}</div>
+        const prioStyle = tk.priority === 'high' ? 'color:#ef4444;background:rgba(239,68,68,0.1);' 
+                        : tk.priority === 'low' ? 'color:#0a84ff;background:rgba(10,132,255,0.1);' 
+                        : 'color:#eab308;background:rgba(234,179,8,0.1);';
+        
+        const statusBg = tk.status === 'done' ? 'background:rgba(48,209,88,0.1);color:#30d158;border-color:rgba(48,209,88,0.4);' 
+                       : tk.status === 'in_progress' ? 'background:rgba(10,132,255,0.1);color:#0a84ff;border-color:#0a84ff;' 
+                       : 'background:#f5f5f7;color:#636366;border-color:#e5e5ea;';
+        
+        return `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;flex-wrap:wrap;">
+            <span style="font-size:10px;font-weight:600;min-width:110px;">${esc(taskTitle(tk))}</span>
+            <span style="padding:1px 6px;border-radius:4px;font-size:8px;font-weight:600;border:1px solid currentColor;${prioStyle}">
+              ${tk.priority==='high'?'↑ High':tk.priority==='low'?'↓ Low':'— Normal'}
+            </span>
+            ${wk ? `<span style="background:#f5f5f7;padding:1px 6px;border-radius:4px;font-size:8px;color:#111;border:1px solid #e5e5ea;">👷 ${esc(wk.name)}</span>` : ''}
+            ${costVal > 0 ? `<span style="background:#fff7ed;padding:1px 6px;border-radius:4px;font-size:8px;font-weight:800;color:#c2410c;border:1px solid #fed7aa;">💰 ${fmt(costVal)}</span>` : ''}
+            <span style="padding:1px 6px;border-radius:4px;font-size:8px;font-weight:600;border:1px solid currentColor;${statusBg}">
+              ${t('status_' + (tk.status||(tk.done?'done':'todo'))) || (tk.status||(tk.done?'done':'todo'))}
+            </span>
+          </div>`;
+      }).join('');
+    } else {
+      tasksHtml = `<div style="font-size:9px;color:#888;font-style:italic;">${t('no_tasks') || 'Nema zadataka.'}</div>`;
+    }
+
+    const uniqueWorkers = [...new Set(phaseTasks.map(tk => tk.worker_id).filter(id => id))]
+      .map(id => (data.workers || []).find(w => w.id === id))
+      .filter(w => w);
+
+    const workersPdfText = uniqueWorkers.length > 0 
+      ? `👷 ${t('needed_workers') || 'Potrebno'} ${uniqueWorkers.length} ${t('workers_label') || 'radnika'}: ${uniqueWorkers.map(w => esc(w.name)).join(', ')}`
+      : '';
+
+    phasesHtml += `
+      <div style="display:flex;align-items:stretch;margin-bottom:20px;page-break-inside:avoid;">
+        <div style="width:140px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;padding-right:10px;">
+          <h3 style="margin:0;font-size:11px;font-weight:700;color:#000;">${esc(phaseTitle(ph))}</h3>
+          <div style="font-size:8px;color:#666;margin-top:1px;">
+            ${(ph.start || ph.end) ? `${ph.start || '—'} do ${ph.end || '—'}` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;margin-top:4px;">
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+              <div style="font-size:7px;color:#000;font-weight:700;background:rgba(0,0,0,0.05);padding:1px 4px;border-radius:3px;border:0.5px solid #ddd;">
+                ${ph.progress || 0}% gotov
+              </div>
+              ${phaseTotalCost > 0 ? `<div style="font-size:8px;color:#15803d;font-weight:800;background:rgba(34,197,94,0.1);padding:1px 4px;border-radius:3px;border:1px solid rgba(34,197,94,0.2);">💰 ${fmt(phaseTotalCost)}</div>` : ''}
+            </div>
+            ${workersPdfText ? `<div style="font-size:7px;color:#4b5563;line-height:1.2;">${workersPdfText}</div>` : ''}
+          </div>
+        </div>
+        <div style="width:18px;display:flex;align-items:stretch;margin-right:10px;margin-left:0;color:#ccc;">
+          <svg viewBox="0 0 24 100" preserveAspectRatio="none" style="width:100%;height:100%;" stroke="currentColor" fill="none">
+            <path d="M 4 0 C 20 0 20 10 20 45 C 20 50 24 50 24 50 C 20 50 20 50 20 55 C 20 90 20 100 4 100" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="flex:1;padding-left:5px;display:flex;flex-direction:column;justify-content:center;padding-top:2px;padding-bottom:2px;">
+          ${tasksHtml}
+        </div>
+      </div>
+    `;
+  });
+
+  // 2. Wrap UI structure
+  let existingOverlay = document.getElementById('bl-temp-print-overlay');
+  if (existingOverlay) existingOverlay.remove();
+  
+  const printDiv = document.createElement('div');
+  printDiv.id = 'bl-temp-print-overlay';
+  printDiv.innerHTML = `
+    <style>
+      @media screen { #bl-temp-print-overlay { display: none !important; } }
+      @media print {
+        @page { size: A4 portrait; margin: 15mm; }
+        html, body { visibility: visible !important; background: #fff !important; }
+        #bl-temp-print-overlay { 
+          display: block !important; 
+          visibility: visible !important;
+          width: 100%; 
+          margin: 0; 
+          padding: 0; 
+          background: #fff !important; 
+          color: #000 !important; 
+        }
+        body > *:not(#bl-temp-print-overlay) { display: none !important; }
+        #bl-temp-print-overlay * { 
+          visibility: visible !important;
+          color: #000 !important;
+          border-color: #ddd !important;
+          -webkit-print-color-adjust: exact !important; 
+          print-color-adjust: exact !important; 
+        }
+      }
+    </style>
+    
+    <div style="width:100%;max-width:850px;margin:0 auto;color:#000;font-family:'Helvetica Neue',Arial,sans-serif;padding-bottom:40px;background:#fff;">
+      <div style="border-bottom:3px solid #000;padding-bottom:1.5rem;margin-bottom:2rem;">
+        <div style="font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:#666;margin-bottom:0.4rem;font-weight:700;">AA / STUDIO — Izveštaj Projekta</div>
+        <h1 style="font-size:2.2rem;font-weight:800;margin:0 0 0.3rem;">${(p.title||'Project Report').replace(/</g, '&lt;')}</h1>
+        <div style="color:#222;font-size:0.875rem;">${(p.address||'').replace(/</g, '&lt;')} &nbsp;|&nbsp; Datum: ${new Date().toLocaleDateString('sr-RS')}</div>
       </div>
 
-      <!-- Project Info -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
-        <div style="background:#f5f5f7;border-radius:0.75rem;padding:1rem;">
-          <div style="font-size:0.65rem;color:#636366;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;">Budget</div>
-          <div style="font-size:1.1rem;font-weight:700;">${fmt(p.total_budget||0)}</div>
-        </div>
-        <div style="background:#f5f5f7;border-radius:0.75rem;padding:1rem;">
-          <div style="font-size:0.65rem;color:#636366;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;">Spent</div>
-          <div style="font-size:1.1rem;font-weight:700;">${fmt(totalExpenses)}</div>
-        </div>
-        <div style="background:#f5f5f7;border-radius:0.75rem;padding:1rem;">
-          <div style="font-size:0.65rem;color:#636366;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;">Timeline</div>
-          <div style="font-size:0.875rem;font-weight:600;">${p.start_date||'—'} → ${p.end_date||'—'}</div>
-        </div>
+      <h2 style="font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1.5rem;padding-bottom:0.5rem;border-bottom:1px solid #e5e5ea;color:#000;">
+        Faze i Zadaci
+      </h2>
+      
+      <div style="padding-top:10px;">
+        ${phasesHtml}
       </div>
-
-      <!-- Phases -->
-      <h2 style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid #e5e5ea;">Phases (${phases.length})</h2>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:2rem;font-size:0.8rem;">
-        <thead><tr style="background:#f5f5f7;">
-          <th style="padding:0.5rem;text-align:left;">#</th>
-          <th style="padding:0.5rem;text-align:left;">Phase</th>
-          <th style="padding:0.5rem;text-align:left;">Status</th>
-          <th style="padding:0.5rem;text-align:left;">Dates</th>
-          <th style="padding:0.5rem;text-align:right;">Progress</th>
-        </tr></thead>
-        <tbody>
-          ${phases.map((ph,i) => `<tr style="border-bottom:1px solid #e5e5ea;">
-            <td style="padding:0.5rem;color:#636366;">${String(i+1).padStart(2,'0')}</td>
-            <td style="padding:0.5rem;font-weight:600;">${esc(phaseTitle(ph))}</td>
-            <td style="padding:0.5rem;">${ph.status||'—'}</td>
-            <td style="padding:0.5rem;color:#636366;">${ph.start||'—'} → ${ph.end||'—'}</td>
-            <td style="padding:0.5rem;text-align:right;">${ph.progress||0}%</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-
-      <!-- Workers -->
-      ${workers.length ? `<h2 style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid #e5e5ea;">Workers (${workers.length})</h2>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:2rem;font-size:0.8rem;">
-        <thead><tr style="background:#f5f5f7;">
-          <th style="padding:0.5rem;text-align:left;">Name</th>
-          <th style="padding:0.5rem;text-align:left;">Trade</th>
-          <th style="padding:0.5rem;text-align:left;">Phone</th>
-          <th style="padding:0.5rem;text-align:left;">Rate</th>
-        </tr></thead>
-        <tbody>${workers.map(w => `<tr style="border-bottom:1px solid #e5e5ea;">
-          <td style="padding:0.5rem;font-weight:600;">${esc(w.name)}</td>
-          <td style="padding:0.5rem;">${esc(w.trade||'—')}</td>
-          <td style="padding:0.5rem;">${esc(w.phone||'—')}</td>
-          <td style="padding:0.5rem;">${esc(w.rate||'—')}</td>
-        </tr>`).join('')}</tbody>
-      </table>` : ''}
-
-      <!-- Payment Schedule -->
-      ${payments.length ? `<h2 style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid #e5e5ea;">Payment Schedule</h2>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:2rem;font-size:0.8rem;">
-        <thead><tr style="background:#f5f5f7;">
-          <th style="padding:0.5rem;text-align:left;">Description</th>
-          <th style="padding:0.5rem;text-align:left;">Due</th>
-          <th style="padding:0.5rem;text-align:right;">Amount</th>
-          <th style="padding:0.5rem;text-align:left;">Status</th>
-        </tr></thead>
-        <tbody>${payments.map(pm => `<tr style="border-bottom:1px solid #e5e5ea;">
-          <td style="padding:0.5rem;font-weight:600;">${esc(pm.desc)}</td>
-          <td style="padding:0.5rem;">${pm.due_date||'—'}</td>
-          <td style="padding:0.5rem;text-align:right;font-weight:600;">${fmt(pm.amount)}</td>
-          <td style="padding:0.5rem;color:${pm.paid?'#22c55e':'#ef4444'};">${pm.paid?'✓ Paid':'Pending'}</td>
-        </tr>`).join('')}
-        <tr style="background:#f5f5f7;font-weight:700;">
-          <td style="padding:0.5rem;" colspan="2">Total</td>
-          <td style="padding:0.5rem;text-align:right;">${fmt(totalPayments)}</td>
-          <td style="padding:0.5rem;color:#22c55e;">${fmt(paidPayments)} paid</td>
-        </tr></tbody>
-      </table>` : ''}
-
-      <!-- Footer -->
-      <div style="border-top:1px solid #e5e5ea;padding-top:1rem;margin-top:2rem;font-size:0.7rem;color:#636366;display:flex;justify-content:space-between;">
+      
+      <div style="border-top:1px solid #e5e5ea;padding-top:1.5rem;margin-top:3rem;font-size:0.75rem;color:#666;display:flex;justify-content:space-between;font-weight:600;">
         <span>AA / Studio Belgrade — aastudiobelgrade.rs</span>
-        <span>Generated ${new Date().toLocaleString(currentLang==='sr'?'sr-RS':'en-US')}</span>
+        <span>Generisano: ${new Date().toLocaleString('sr-RS')}</span>
       </div>
-    </div>`;
-
-  const printWin = window.open('', '_blank', 'width=900,height=700');
-  printWin.document.write(`<!DOCTYPE html><html><head><title>${esc(p.title||'Report')}</title>
-    <style>@media print{body{margin:0;padding:20px;}}body{font-family:'Helvetica Neue',Arial,sans-serif;padding:40px;}</style>
-    </head><body>${html}</body></html>`);
-  printWin.document.close();
-  printWin.focus();
-  setTimeout(() => { printWin.print(); }, 500);
+    </div>
+  `;
+  
+  document.body.appendChild(printDiv);
+  setTimeout(() => { window.print(); }, 200);
 }
 
 // =============================================
 // THEME SYSTEM — 4 themes: v2-dark, v2-light, v1-dark, v1-light
-// planner.html: only v1-dark / v1-light (no #v2css link in DOM)
-// planner2.html: all 4 themes via #v2css stylesheet toggle
 // =============================================
 const _THEME_META = {
   'v2-dark':  { bg: '#0D1117', bd: '#6366F1', label: 'Indigo' },
@@ -125,8 +148,34 @@ const _THEME_META = {
   'v1-light': { bg: '#f5f5f5', bd: '#c7c7cc', label: 'Light'  },
 };
 
+// Initialize the theme menu on load
+(function createThemeMenu() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('themeMenu')) return;
+
+  const menu = document.createElement('div');
+  menu.id = 'themeMenu';
+  menu.className = 'bl-theme-menu';
+  menu.innerHTML = `
+    <div class="bl-theme-menu-header" style="padding: 10px 10px 10px 31px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--mist); margin-bottom: 4px;">Select Theme</div>
+    <button class="bl-theme-menu-item" data-theme-pick="v2-dark"  onclick="setTheme('v2-dark')">
+      <span class="bl-theme-dot" style="background:#0D1117; border-color:#6366F1;"></span> Indigo Dark
+    </button>
+    <button class="bl-theme-menu-item" data-theme-pick="v2-light" onclick="setTheme('v2-light')">
+      <span class="bl-theme-dot" style="background:#F1F5F9; border-color:#6366F1;"></span> Indigo Light
+    </button>
+    <button class="bl-theme-menu-item" data-theme-pick="v1-dark"  onclick="setTheme('v1-dark')">
+      <span class="bl-theme-dot" style="background:#1c1c1e; border-color:#636366;"></span> Classic Dark
+    </button>
+    <button class="bl-theme-menu-item" data-theme-pick="v1-light" onclick="setTheme('v1-light')">
+      <span class="bl-theme-dot" style="background:#f5f5f5; border-color:#c7c7cc;"></span> Classic Light
+    </button>
+  `;
+  document.body.appendChild(menu);
+})();
+
 function setTheme(name) {
-  const body  = document.querySelector('.blanner-body');
+  const body  = document.querySelector('.blanner-body') || document.body;
   const v2css = document.getElementById('v2css');
 
   const isLight = name === 'v1-light' || name === 'v2-light';
@@ -136,8 +185,11 @@ function setTheme(name) {
   if (isLight) body.setAttribute('data-theme', 'light');
   else         body.removeAttribute('data-theme');
 
-  // Toggle planner2.css (only present on planner2.html)
-  if (v2css) v2css.disabled = !isV2;
+  // Toggle planner2.css (Indigo theme)
+  if (v2css) {
+    if (isV2) v2css.removeAttribute('disabled');
+    else      v2css.setAttribute('disabled', 'true');
+  }
 
   // Sync chip: dot color + label
   const meta = _THEME_META[name];
@@ -172,7 +224,7 @@ function setTheme(name) {
 
 // Toggle the theme dropdown open/closed
 function toggleThemeMenu(e) {
-  e.stopPropagation();
+  if (e && e.stopPropagation) e.stopPropagation();
   const menu = document.getElementById('themeMenu');
   const btn  = document.getElementById('themeChipBtn');
   if (!menu || !btn) return;
@@ -212,266 +264,82 @@ function toggleTheme() {
 
 // Initialize theme from localStorage on page load
 (function initTheme() {
-  const v2css  = document.getElementById('v2css');
-  const saved  = localStorage.getItem('planner_theme');
-  let theme = saved;
-  if (!theme || theme === 'dark')  theme = v2css ? 'v2-dark'  : 'v1-dark';
-  if (theme === 'light')           theme = v2css ? 'v2-light' : 'v1-light';
-  setTheme(theme);
+  setTimeout(() => {
+    const v2css  = document.getElementById('v2css');
+    const saved  = localStorage.getItem('planner_theme');
+    const themes = v2css
+      ? ['v2-dark', 'v2-light', 'v1-dark', 'v1-light']
+      : ['v1-dark', 'v1-light'];
+    
+    if (saved && themes.includes(saved)) {
+      setTheme(saved);
+    } else if (saved === 'dark') {
+      setTheme('v1-dark');
+    } else if (saved === 'light') {
+      setTheme('v1-light');
+    } else {
+      setTheme(themes[0]);
+    }
+  }, 100);
 })();
 
 // =============================================
-// ONBOARDING WIZARD
+// BACKUP / RESTORE / EXPORT (JS Side)
 // =============================================
-let onboardChoice = null;
-
-function showOnboarding() {
-  document.getElementById('onboardOverlay').classList.add('active');
-  // Set default start date to today
-  document.getElementById('onboardStartDate').valueAsDate = new Date();
+async function exportProjectJSON() {
+    const data = { ...appData, export_date: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Project_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
 }
 
-function onboardSelect(type) {
-  onboardChoice = type;
-  if (type === 'blank') {
-    // Skip step 2 for blank — go straight but still show options
-    document.getElementById('onboardStep2').querySelector('.bl-onboard-toggles').style.display = 'none';
-  } else {
-    document.getElementById('onboardStep2').querySelector('.bl-onboard-toggles').style.display = 'flex';
-  }
-  document.getElementById('onboardStep1').style.display = 'none';
-  document.getElementById('onboardStep2').style.display = 'block';
-
-  // Update button text based on choice
-  const labels = { 
-    garsonjera: t('btn_start_studio'), 
-    dvosoban: t('btn_start_two'), 
-    trosoban: t('btn_start_three'), 
-    blank: t('btn_start_blank') 
-  };
-  document.getElementById('onboardGoText').textContent = labels[type] || t('btn_start_blank');
-}
-
-function onboardBack() {
-  document.getElementById('onboardStep2').style.display = 'none';
-  document.getElementById('onboardStep1').style.display = 'block';
-  onboardChoice = null;
-}
-
-async function onboardApply() {
-  const btn = document.getElementById('onboardGoBtn');
-  btn.disabled = true;
-  document.getElementById('onboardGoText').style.display = 'none';
-  document.getElementById('onboardGoSpinner').style.display = 'inline';
-
-  const projectName  = document.getElementById('onboardProjectName').value.trim() || 'Moje Renoviranje';
-  const address      = document.getElementById('onboardAddress').value.trim();
-  const startDate    = document.getElementById('onboardStartDate').value;
-  const currency     = document.getElementById('onboardCurrency').value;
-  const incCosts     = document.getElementById('onboardIncludeCosts')?.checked ?? true;
-  const incNotes     = document.getElementById('onboardIncludeNotes')?.checked ?? true;
-  const autoSchedule = document.getElementById('onboardAutoSchedule')?.checked ?? true;
-
-  try {
-    // Save currency preference
-    localStorage.setItem('planner_cur', currency);
-    currentCur = currency;
-
-    // Save plan basics
-    const planData = { title: projectName, address: address, start_date: startDate, end_date: '', notes: '', total_budget: 0 };
-
-    if (onboardChoice !== 'blank') {
-      const tpl = APARTMENT_TEMPLATES[onboardChoice];
-      if (tpl) {
-        planData.total_budget = tpl.budget;
-
-        // Show Progress Area
-        const progressArea = document.getElementById('onboardProgressArea');
-        const progressBarInner = document.getElementById('onboardProgressBarInner');
-        const progressStatus = document.getElementById('onboardProgressStatus');
-        if (progressArea) progressArea.style.display = 'block';
-
-        // Calculate end date from durations
-        if (startDate && autoSchedule) {
-          const totalDays = tpl.phases.reduce((s, p) => s + p.duration, 0);
-          const ed = new Date(startDate);
-          ed.setDate(ed.getDate() + totalDays);
-          planData.end_date = ed.toISOString().slice(0,10);
-        }
-
-        await api('save_plan', planData);
-
-        // Add phases and tasks
-        let cursor = startDate ? new Date(startDate) : new Date();
-        const totalPhases = tpl.phases.length;
-        let pIndex = 0;
-
-        for (const ph of tpl.phases) {
-          pIndex++;
-          const pct = Math.round((pIndex / totalPhases) * 100);
-          if (progressBarInner) progressBarInner.style.width = pct + '%';
-          if (progressStatus) progressStatus.textContent = `Učitavanje faze: ${ph.name} (${pct}%)`;
-
-          let start = '', end = '';
-          if (autoSchedule) {
-            start = cursor.toISOString().slice(0,10);
-            cursor.setDate(cursor.getDate() + ph.duration);
-            end = cursor.toISOString().slice(0,10);
-            cursor.setDate(cursor.getDate() + 1);
-          }
-          const phaseName = (typeof tplGetPhaseName === 'function') ? tplGetPhaseName(ph.name, currentLang) : ph.name;
-          const phRes = await api('add_phase', { name: phaseName, notes: ph.notes, start, end, status: 'pending', progress: 0 });
-
-          // Add tasks for this phase
-          if (phRes && phRes.phase && ph.tasks && ph.tasks.length) {
-            const phaseId = phRes.phase.id;
-            for (const tk of ph.tasks) {
-              const taskTitle = (typeof tplGetTaskTitle === 'function') ? tplGetTaskTitle(tk.title, currentLang) : tk.title;
-              await api('add_task', {
-                title:    taskTitle,
-                phase_id: phaseId,
-                priority: tk.priority || 'normal',
-                cost:     incCosts ? (tk.cost || 0) : 0,
-                notes:    incNotes ? (tk.notes || '') : '',
-                status:   'todo'
-              });
-            }
-          }
-        }
-      }
-    } else {
-      // Blank project — just save the plan
-      await api('save_plan', planData);
-    }
-
-    // Mark onboarding as done for this project
-    localStorage.setItem('planner_onboard_done_' + currentProject, '1');
-
-    // Close overlay and reload data
-    document.getElementById('onboardOverlay').classList.remove('active');
-    await init();
-    toast(t('project_ready_toast'));
-
-  } catch (err) {
-    console.error('Onboarding error:', err);
-    toast(t('err_template_load'), 'err');
-    btn.disabled = false;
-    document.getElementById('onboardGoText').style.display = 'inline';
-    document.getElementById('onboardGoSpinner').style.display = 'none';
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.lucide) lucide.createIcons();
-});
-
-// =============================================
-// PROJECT BACKUP & RESTORE (.plan format)
-// =============================================
-function exportProjectData() {
-  const data = {
-    version: "1.1",
-    generatedAt: new Date().toISOString(),
-    project: appData.plan,
-    phases: appData.phases,
-    tasks: appData.tasks,
-    workers: appData.workers,
-    expenses: appData.expenses,
-    materials: appData.materials,
-    payments: appData.payments,
-    punch_list: appData.punch_list,
-    logs: appData.logs,
-    changes: appData.changes
-  };
-  
-  // Use a simple encoding (UTF-8 safe base64) to discourage manual editing
-  const json = JSON.stringify(data);
-  const payload = btoa(unescape(encodeURIComponent(json)));
-  const fileName = (appData.plan?.title || 'Project').replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".plan";
-  
-  const blob = new Blob([payload], { type: 'application/octet-stream' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast(t('backup_saved') || "Rezervna kopija sačuvana.");
-}
-
-async function importProjectData(input) {
-  const file = input.files[0];
+async function handleImportProject(file) {
   if (!file) return;
-  
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
-      const content = e.target.result;
-      const jsonStr = decodeURIComponent(escape(atob(content)));
-      const data = JSON.parse(jsonStr);
-      
-      const confirmMsg = t('confirm_import') || "Da li ste sigurni? Ovo će obrisati trenutne podatke i učitati backup.";
-      if (!confirm(confirmMsg)) {
-        input.value = "";
-        return;
-      }
-      
-      toast(t('restoring_data') || "Vraćanje podataka...", 'info');
-      
-      // 1. Clear current project
-      await api('reset_project', { type: 'all' });
-      
-      // 2. Save Plan basics
-      if (data.project) {
-        await api('save_plan', {
-          title: data.project.title,
-          address: data.project.address,
-          total_budget: data.project.total_budget,
-          exchange_rate: data.project.exchange_rate,
-          start_date: data.project.start_date,
-          end_date: data.project.end_date,
-          notes: data.project.notes
-        });
-      }
+      const data = JSON.parse(e.target.result);
+      if (!data.plan) throw new Error("Invalid format");
 
-      // 3. Import Workers first (so tasks can link to them)
+      // 1. Update Project basic info
+      await api('update_project', data.plan);
+
+      // 2. Clear & Restore workers
       const workerIdMap = {};
       if (data.workers) {
         for (const w of data.workers) {
           const res = await api('add_worker', { ...w, id: undefined });
-          if (res && res.worker) workerIdMap[w.id] = res.worker.id;
+          if (res.ok && res.worker) workerIdMap[w.id] = res.worker.id;
         }
       }
 
-      // 4. Import Phases and their Tasks/Materials/Payments
+      // 3. Restore phases
       if (data.phases) {
         for (const ph of data.phases) {
-          const phRes = await api('add_phase', { ...ph, id: undefined });
-          if (phRes && phRes.phase) {
-            const newPhId = phRes.phase.id;
-            
-            // Tasks in this phase
-            const tasksInPh = (data.tasks || []).filter(tk => tk.phase_id === ph.id);
-            for (const tk of tasksInPh) {
+          const res = await api('add_phase', { ...ph, id: undefined });
+          if (res.ok && res.phase) {
+            const newPhId = res.phase.id;
+            // Restore tasks for this phase
+            const phaseTasks = (data.tasks || []).filter(t => t.phase_id === ph.id);
+            for (const t of phaseTasks) {
               await api('add_task', { 
-                ...tk, 
+                ...t, 
                 id: undefined, 
                 phase_id: newPhId, 
-                worker_id: workerIdMap[tk.worker_id] || '' 
+                worker_id: workerIdMap[t.worker_id] || '' 
               });
             }
-            
-            // Materials in this phase
-            const matsInPh = (data.materials || []).filter(m => m.phase_id === ph.id);
-            for (const m of matsInPh) {
+            // Restore materials
+            const phaseMaterials = (data.materials || []).filter(m => m.phase_id === ph.id);
+            for (const m of phaseMaterials) {
               await api('add_material', { ...m, id: undefined, phase_id: newPhId });
             }
-
-            // Payments in this phase
-            const paysInPh = (data.payments || []).filter(p => p.phase_id === ph.id);
-            for (const p of paysInPh) {
+            // Restore payments
+            const phasePayments = (data.payments || []).filter(p => p.phase_id === ph.id);
+            for (const p of phasePayments) {
               await api('add_payment', { ...p, id: undefined, phase_id: newPhId, worker_id: workerIdMap[p.worker_id] || '' });
             }
           }

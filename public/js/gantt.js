@@ -35,32 +35,10 @@ function setZoom(val) {
 function adjustZoom(delta) { setZoom(ganttZoom + delta); }
 
 function exportGanttPDF() {
-  const wrap = document.getElementById('ganttWrap');
-  const container = document.getElementById('ganttCustom');
-  if (!wrap || !container) return;
-
-  // Save original styles
-  const wrapOvf = wrap.style.overflow;
-  const cW      = container.style.width;
-  const cMinW   = container.style.minWidth;
-
-  // Expand fully for print
-  wrap.style.overflow = 'visible';
-  container.style.width    = '100%';
-  container.style.minWidth = '100%';
-
-  const prevTitle = document.title;
-  document.title  = (appData.plan?.title || 'Project') + ' — Gantt Chart';
-
-  window.print();
-
-  // Restore after print dialog closes
-  setTimeout(() => {
-    wrap.style.overflow      = wrapOvf;
-    container.style.width    = cW;
-    container.style.minWidth = cMinW;
-    document.title = prevTitle;
-  }, 500);
+  // Use the newly unified PDF export from export.js that renders both Phases and Gantt
+  if (typeof exportPDF === 'function') {
+    exportPDF();
+  }
 }
 
 function changeGanttView(mode) {

@@ -198,7 +198,7 @@
 
         .user-row {
             display: grid;
-            grid-template-columns: 1fr 1fr auto auto;
+            grid-template-columns: 2.5fr 1fr 1fr 1fr 1.5fr auto;
             align-items: center;
             gap: 1rem;
             padding: 1rem 0;
@@ -278,15 +278,36 @@
 <body>
     <div class="dashboard">
         <header>
-            <div>
-                <h1>Admin Dashboard</h1>
-                <div style="color: var(--text-dim); font-size: 0.875rem; margin-top: 0.5rem;">System Health & Usage Overview</div>
+            <div style="display:flex; align-items:center; gap:1.5rem;">
+                <a href="/planner.html" style="color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; font-weight:600; background:rgba(99,102,241,0.1); padding:0.5rem 1rem; border-radius:12px;">
+                    <i data-lucide="arrow-left" style="width:16px; height:16px;"></i>
+                    Back to Planner
+                </a>
+                <div>
+                    <h1>Admin Dashboard</h1>
+                    <div style="color: var(--text-dim); font-size: 0.875rem; margin-top: 0.25rem;">System Health & Usage Overview</div>
+                </div>
             </div>
-            <button class="btn-refresh" onclick="loadStats()">
-                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
-                Refresh
-            </button>
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <button class="bl-theme-chip" id="themeChipBtn" onclick="toggleThemeMenu(event)" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding:0.6rem 1rem; border-radius:14px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                    <span class="bl-theme-chip-dot" id="themeChipDot" style="width:8px; height:8px; border-radius:50%; border:1px solid #fff;"></span>
+                    <span id="themeChipLabel">Theme</span>
+                </button>
+                <button class="btn-refresh" onclick="loadStats()">
+                    <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                    Refresh
+                </button>
+            </div>
         </header>
+
+        <style>
+          /* Minimal theme menu styles for Admin Dashboard */
+          .bl-theme-menu { display:none; position:fixed; z-index:10000; background:#1c1c1e; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:0.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.5); min-width:160px; }
+          .bl-theme-menu.open { display:block; }
+          .bl-theme-menu-item { width:100%; text-align:left; background:none; border:none; color:rgba(255,255,255,0.7); padding:0.6rem 0.8rem; font-size:0.85rem; cursor:pointer; border-radius:8px; display:flex; align-items:center; gap:0.6rem; }
+          .bl-theme-menu-item:hover { background:rgba(255,255,255,0.05); color:#fff; }
+          .bl-theme-dot { width:10px; height:10px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); }
+        </style>
 
         <div class="stats-grid">
             <div class="stat-card">
@@ -406,6 +427,7 @@
     </div>
 
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/export.js"></script>
     <script>
         let regChart = null;
 
@@ -531,31 +553,61 @@
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 const data = await res.json();
-                if (!data.ok) return;
+                const body = document.getElementById('usersBody');
+                
+                if (!data.ok) {
+                    body.innerHTML = `<div class="users-empty" style="color:#ef4444;">Error: ${data.error || 'Unknown server error'}</div>`;
+                    return;
+                }
 
                 document.getElementById('usersTotalBadge').textContent = data.total + ' total';
 
-                const body = document.getElementById('usersBody');
-                if (data.users.length === 0) {
+                if (!data.users || data.users.length === 0) {
                     body.innerHTML = '<div class="users-empty">No registered users yet.</div>';
                     return;
                 }
 
                 body.innerHTML = data.users.map(u => {
                     const initials = (u.name || u.email).slice(0, 2).toUpperCase();
-                    const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                    const regDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—';
+                    const loginDate = u.lastLogin ? new Date(u.lastLogin).toLocaleTimeString([], { day:'2-digit', month:'short', hour: '2-digit', minute: '2-digit' }) : 'Never';
+                    
+                    const isPaidHtml = `
+                        <select onchange="updateUserPaid('${u.id}', this.value === 'true')" style="background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:0.3rem; font-size:0.75rem; cursor:pointer; outline:none; width:100%;">
+                            <option value="false" ${!u.isPaid ? 'selected' : ''}>❌ Free</option>
+                            <option value="true" ${u.isPaid ? 'selected' : ''}>✅ Paid</option>
+                        </select>
+                    `;
+
+                    const statusHtml = u.isVerified 
+                        ? '<span style="color:#22c55e; font-size:0.75rem; font-weight:600;">✅ Verified</span>' 
+                        : '<span style="color:#f59e0b; font-size:0.75rem; font-weight:600;">⏳ Pending</span>';
+
                     return `
                     <div class="user-row">
                         <div class="user-info">
                             <div class="user-avatar">${initials}</div>
-                            <div>
-                                <div class="user-name">${u.name || '—'}</div>
+                            <div style="min-width:0;">
+                                <div class="user-name">${u.name || 'User'}</div>
                                 <div class="user-email">${u.email}</div>
                             </div>
                         </div>
-                        <div class="user-date">${date}</div>
-                        <span class="id-badge">${u.id.slice(0, 8)}…</span>
-                        <button class="btn-delete" onclick="openConfirm('${u.id}', '${u.email.replace(/'/g, "\\'")}')">Delete</button>
+                        <div class="user-status">${statusHtml}</div>
+                        <div class="user-projects" style="font-size:0.8rem; font-weight:600; text-align:center;">
+                            <span style="background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:4px;">${u._count?.projects || 0} proj</span>
+                        </div>
+                        <div class="user-date" style="text-align:center;">
+                            <div style="font-size:0.7rem; color:var(--text-dim);">Joined</div>
+                            <div>${regDate}</div>
+                        </div>
+                        <div class="user-login" style="font-size:0.75rem; color:var(--text-dim); text-align:center;">
+                            <div style="font-size:0.7rem; opacity:0.7;">Last Login</div>
+                            <div>${loginDate}</div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.4rem; align-items:flex-end;">
+                            ${isPaidHtml}
+                            <button class="btn-delete" style="width:100%;" onclick="openConfirm('${u.id}', '${u.email.replace(/'/g, "\\'")}')">Delete</button>
+                        </div>
                     </div>`;
                 }).join('');
 
@@ -569,7 +621,10 @@
                 btns += `<button class="page-btn" onclick="loadUsers(${page + 1})" ${page >= data.pages ? 'disabled' : ''}>Next →</button>`;
                 pag.innerHTML = btns;
 
-            } catch (e) { console.error('Failed to load users:', e); }
+            } catch (e) { 
+                console.error('Failed to load users:', e); 
+                document.getElementById('usersBody').innerHTML = `<div class="users-empty" style="color:#ef4444;">Connection error: ${e.message}</div>`;
+            }
         }
 
         function openConfirm(id, email) {
@@ -602,6 +657,26 @@
             lucide.createIcons();
             setInterval(loadStats, 30000);
         };
+
+        async function updateUserPaid(id, isPaid) {
+            const token = localStorage.getItem('userToken') || '';
+            try {
+                const res = await fetch(`/api/admin/users/${id}/paid`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isPaid })
+                });
+                const data = await res.json();
+                if (!data.ok) {
+                    alert('Failed to update template access.');
+                    loadUsers(usersPage); // rollback select
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error updating template status.');
+                loadUsers(usersPage);
+            }
+        }
     </script>
 </body>
 </html>

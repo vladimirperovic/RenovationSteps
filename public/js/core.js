@@ -7,6 +7,7 @@
 
 let appData  = { plan:{}, phases:[], expenses:[], workers:[], tasks:[], logs:[], punch_list:[], changes:[] };
 let IS_ADMIN = false;
+let CAN_USE_TEMPLATES = false;
 
 async function api(action, body = {}) {
   console.log(`[API] Calling: ${API} | Action: ${action}`, body);
@@ -39,14 +40,17 @@ async function init() {
       appData  = json.data;
       console.log('appData loaded:', appData.phases?.length, 'phases,', appData.tasks?.length, 'tasks');
       IS_ADMIN = json.is_admin === true;
-      // show/hide admin template banner
+      CAN_USE_TEMPLATES = json.can_use_templates === true;
+      // show/hide admin template banner & nav link
       const banner = document.getElementById('adminTemplateBanner');
       if (banner) banner.style.display = IS_ADMIN ? 'block' : 'none';
+      const adminNav = document.getElementById('nav-admin');
+      if (adminNav) adminNav.style.display = IS_ADMIN ? 'flex' : 'none';
       // show/hide template section based on access
       const tplUnlocked = document.getElementById('templateSectionUnlocked');
       const tplLocked   = document.getElementById('templateSectionLocked');
-      if (tplUnlocked) tplUnlocked.style.display = IS_ADMIN ? 'flex' : 'none';
-      if (tplLocked)   tplLocked.style.display   = IS_ADMIN ? 'none' : 'block';
+      if (tplUnlocked) tplUnlocked.style.display = CAN_USE_TEMPLATES ? 'flex' : 'none';
+      if (tplLocked)   tplLocked.style.display   = CAN_USE_TEMPLATES ? 'none' : 'block';
 
       // First-time user check: show onboarding if no phases and no tasks exist
       if (!IS_ADMIN && appData.phases.length === 0 && appData.tasks.length === 0 && !localStorage.getItem('planner_onboard_done_' + currentProject)) {
