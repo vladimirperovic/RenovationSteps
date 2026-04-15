@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const compression = require('compression');
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { Resend } = require('resend');
 
 // Prisma (SQLite) — required, no JSON fallback
@@ -27,12 +29,104 @@ async function tryJsonMigration() {
     console.error('[Init] JSON migration failed:', err?.message || err);
   }
 }
-tryJsonMigration();
+
+async function tryUserSeeding() {
+  try {
+    const adminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+    const adminPass  = (process.env.ADMIN_PASSWORD_HASH || '').trim();
+    const clientEmail = (process.env.CLIENT_EMAIL || '').toLowerCase().trim();
+    const clientPass  = (process.env.CLIENT_PASSWORD_HASH || '').trim();
+
+    if (!adminEmail || !adminPass) {
+      console.warn('[Init] WARNING: ADMIN_EMAIL or ADMIN_PASSWORD_HASH is missing in environment!');
+      return; 
+    }
+
+    // Audit log removed for security
+    
+    // Admin seeding
+    const admin = await prisma.user.findUnique({ where: { email: adminEmail } });
+    if (!admin) {
+      console.log(`[Init] Seeding admin user (${adminEmail})...`);
+      await prisma.user.create({
+        data: {
+          email: adminEmail,
+          name: 'Admin',
+          password: await bcrypt.hash(adminPass, 10),
+          isPaid: true
+        }
+      });
+    } else {
+      console.log(`[Init] Synchronizing admin credentials...`);
+      await prisma.user.update({
+        where: { id: admin.id },
+        data: { 
+          email: adminEmail,
+          password: await bcrypt.hash(adminPass, 10) 
+        }
+      });
+    }
+
+    // Client seeding
+    if (clientEmail && clientPass) {
+      const client = await prisma.user.findUnique({ where: { email: clientEmail } });
+      if (!client) {
+        console.log(`[Init] Seeding client user (${clientEmail})...`);
+        await prisma.user.create({
+          data: {
+            email: clientEmail,
+            name: 'Client',
+            password: await bcrypt.hash(clientPass, 10),
+            isPaid: true
+          }
+        });
+      } else {
+        console.log(`[Init] Synchronizing client credentials...`);
+        await prisma.user.update({
+          where: { id: client.id },
+          data: { 
+            email: clientEmail,
+            password: await bcrypt.hash(clientPass, 10) 
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[Init] User seeding failed:', err?.message || err);
+  }
+}
+
+async function tryRunMigrations() {
+  // 1. Force database schema sync
+  try {
+    console.log('[Init] FORCING database schema sync (db push)...');
+    const { execSync } = require('child_process');
+    // Using migrate deploy for safer production sync
+    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+    console.log('[Init] Database schema pushed successfully.');
+    
+    // Also generate client to match
+    execSync('npx prisma generate', { stdio: 'inherit' });
+    console.log('[Init] Prisma client generated.');
+  } catch (migErr) {
+    console.error('[Init] Fatal DB Sync Error:', migErr.message);
+  }
+}
+
+async function init() {
+  await tryJsonMigration();
+  await tryRunMigrations(); // New: run migrations before seeding
+  
+  await tryUserSeeding();
+}
+// init() will be called in startServer() at the bottom
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 fs.mkdir(DATA_DIR, { recursive: true }).catch(() => {});
+
+app.get('/api/ping', (req, res) => res.json({ ok: true, message: 'pong' }));
 
 function generateId(prefix) {
   return `${prefix}_${crypto.randomUUID().replace(/-/g, '').substring(0, 8)}`;
@@ -44,6 +138,7 @@ app.get('/', (req, res) => {
 });
 
 // Middleware
+app.use(compression());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -54,10 +149,10 @@ app.use(express.static('public'));
 // PROJECT API — Single action-based endpoint (used by planner frontend)
 // ------------------------------------------------------------------------
 
-const ADMIN_TOKEN    = process.env.ADMIN_TOKEN    || 'test-token-admin';
-const CLIENT_TOKEN   = process.env.CLIENT_TOKEN   || 'test-token-client';
+const ADMIN_TOKEN    = process.env.ADMIN_TOKEN;
+const CLIENT_TOKEN   = process.env.CLIENT_TOKEN;
 const ADMIN_TOKENS   = [ADMIN_TOKEN];
-// Template import disabled in open-source version
+const TEMPLATE_TOKENS = [];
 
 const handleGetAll = async (projectId, token = null) => {
   const proj = await prisma.project.findUnique({
@@ -472,8 +567,24 @@ app.post('/api/project/:id', async (req, res) => {
 // Projects CRUD
 app.get('/api/projects', async (req, res) => {
   try {
-    const projects = await prisma.project.findMany();
+    const token = extractToken(req);
+    const userId = (token && token.startsWith('token-')) ? token.split('token-')[1] : null;
+    let projects = [];
+    if (userId) {
+      projects = await prisma.project.findMany({ where: { userId: userId }, orderBy: { createdAt: 'desc' } });
+    } else {
+      // Without specific user token (possibly admin or default token), return all or adjust accordingly.
+      // But for security, better to return only if they are an admin.
+      if (token === process.env.ADMIN_TOKEN) {
+         projects = await prisma.project.findMany({ orderBy: { createdAt: 'desc' } });
+      }
+    }
     return res.json({ ok: true, projects });
+  } catch (e) { return res.status(500).json({ error: e.message }); }
+});
+
+
+    return res.json({ ok: true });
   } catch (e) { return res.status(500).json({ error: e.message }); }
 });
 
@@ -553,7 +664,7 @@ app.get('/api/users', async (req, res) => {
 });
 
 app.post('/api/users', async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email } = req.body || {};
   if (!email) return res.status(400).json({ error: 'Email is required' });
   try {
     const user = await prisma.user.create({ data: { name, email } });
@@ -565,32 +676,44 @@ app.post('/api/users', async (req, res) => {
 // Auth
 // ------------------------------------------------------------------------
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body || {};
-  const bcrypt = require('bcryptjs');
-  const clientEmail = process.env.CLIENT_EMAIL || 'client';
-  const clientHash  = process.env.CLIENT_PASSWORD_HASH || '';
-  if (email === clientEmail && clientHash && bcrypt.compareSync(password, clientHash)) {
-    return res.json({ ok: true, token: CLIENT_TOKEN, user: { id: 'client', name: 'Client', email: clientEmail } });
-  }
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin';
-  const adminHash  = process.env.ADMIN_PASSWORD_HASH || '';
-  if (email === adminEmail && adminHash && bcrypt.compareSync(password, adminHash)) {
-    return res.json({ ok: true, token: ADMIN_TOKEN, user: { id: 'admin', name: 'Admin', email: adminEmail } });
-  }
-
+  const { email: rawEmail, password } = req.body || {};
+  if (!rawEmail || !password) return res.status(400).json({ ok: false, error: 'Email and password required' });
+  
+  const email = rawEmail.toLowerCase().trim();
+  
   try {
     const user = await prisma.user.findUnique({ where: { email } });
+    console.log(`[Auth] Attempt: ${email} (Searching in DB...) - PassLen: ${password.length} (${password[0]}...${password[password.length-1]})`);
+
     if (user && user.password && bcrypt.compareSync(password, user.password)) {
-      // Update last login
+      console.log(`[Auth] SUCCESS (DB match) for: ${email}`);
       await prisma.user.update({
         where: { id: user.id },
         data: { lastLogin: new Date() }
       });
 
-      res.json({ ok: true, token: 'token-' + user.id, user: { id: user.id, name: user.name, email: user.email, isPaid: user.isPaid } });
+      let token = 'token-' + user.id;
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin').toLowerCase().trim();
+      const clientEmail = (process.env.CLIENT_EMAIL || 'client').toLowerCase().trim();
+      
+      if (email === adminEmail) token = ADMIN_TOKEN;
+      else if (email === clientEmail) token = CLIENT_TOKEN;
+
+      return res.json({ 
+        ok: true, 
+        token, 
+        user: { id: user.id, name: user.name, email: user.email, isPaid: user.isPaid } 
+      });
+    } else {
+      if (!user) console.warn(`[Auth] FAIL: User not found in DB: ${email}`);
+      else console.warn(`[Auth] FAIL: Password mismatch in DB for: ${email}`);
     }
-  } catch { /* ignore */ }
-  return res.status(401).json({ ok: false, error: 'Invalid credentials' });
+  } catch (e) {
+    console.error('[Auth] Login error:', e);
+  }
+
+  console.warn(`[Auth] TOTAL FAIL for attempt: ${email}`);
+  return res.status(401).json({ ok: false, error: 'Wrong email or password.' });
 });
 
 // Signup with email verification (still uses JSON files for pending verifications)
@@ -611,9 +734,11 @@ async function saveResets(r) {
 }
 
 app.post('/api/auth/signup', async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password)
+  const { name, email: rawEmail, password } = req.body || {};
+  if (!name || !rawEmail || !password)
     return res.status(400).json({ error: 'All fields required.' });
+  
+  const email = rawEmail.toLowerCase().trim();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email))
     return res.status(400).json({ error: 'Invalid email address.' });
@@ -704,8 +829,9 @@ app.get('/api/auth/verify', async (req, res) => {
 // Forgot / Reset password
 // ------------------------------------------------------------------------
 app.post('/api/auth/forgot', async (req, res) => {
-  const { email } = req.body || {};
-  if (!email) return res.status(400).json({ error: 'Email required.' });
+  const { email: rawEmail } = req.body || {};
+  if (!rawEmail) return res.status(400).json({ error: 'Email required.' });
+  const email = rawEmail.toLowerCase().trim();
 
   let user;
   try { user = await prisma.user.findUnique({ where: { email } }); } catch {}
@@ -719,7 +845,7 @@ app.post('/api/auth/forgot', async (req, res) => {
   await saveResets(resets);
 
   const appUrl   = (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
-  const resetUrl = `${appUrl}/planner.html?reset=${token}`;
+  const resetUrl = `${appUrl}/index.html?reset=${token}`;
   const apiKey   = process.env.RESEND_API_KEY;
 
   if (!apiKey || apiKey.startsWith('re_replace')) {
@@ -775,9 +901,16 @@ app.post('/api/auth/reset', async (req, res) => {
 // ------------------------------------------------------------------------
 app.post('/api/contact', async (req, res) => {
   const apiKey = process.env.RESEND_API_KEY;
-  const targetEmail = process.env.CONTACT_TARGET_EMAIL || 'vladimir.perovic@gmail.com';
+  const targetEmail = process.env.CONTACT_TARGET_EMAIL || 'admin@example.com';
 
-  const { name, email, message } = req.body;
+  const { name, email, message, honey_pot } = req.body || {};
+
+  // Anti-spam Honey Pot check
+  if (honey_pot) {
+    console.log('[Anti-Spam] Bot detected via honey pot.');
+    return res.json({ ok: true, message: 'Message "sent" successfully.' }); // Ghost success
+  }
+
   if (!name || !email || !message)
     return res.status(400).json({ error: 'All fields are required.' });
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1069,6 +1202,16 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+async function startServer() {
+  try {
+    await init();
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+      console.log(`[Init] Force DB Repair executed.`);
+    });
+  } catch (err) {
+    console.error('[Fatal] Init failure:', err);
+  }
+}
+
+startServer();

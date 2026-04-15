@@ -1,0 +1,1321 @@
+/* ============================================================
+   PLANER v2 — Premium Design Override
+   Imports planner.css as base, then overrides design tokens
+   and components with a refined visual language.
+   ============================================================ */
+/* ── Google Fonts: Inter + JetBrains Mono (already in base,
+      adding variable Inter for better weight range) ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ════════════════════════════════════════════════════════════
+   1. DESIGN TOKENS — DARK (default)
+   Deep navy · indigo accent · warm slate hierarchy
+   ════════════════════════════════════════════════════════════ */
+.blanner-body {
+  /* Surfaces */
+  --body-bg:        #0D1117;
+  --card-bg:        #161B27;
+  --card-bg-solid:  #1A2030;
+  --deep:           #080C14;
+
+  /* Accent — Indigo */
+  --accent-main:    #6366F1;
+  --accent-glow:    #818CF8;
+  --accent:         #6366F1;
+
+  /* Charts */
+  --chart-blue:     #6366F1;
+  --chart-purple:   #A78BFA;
+
+  /* Text hierarchy */
+  --text-primary:   #E2E8F0;
+  --text-secondary: #7C8FA6;
+  --ink:            #E2E8F0;
+
+  /* Layer tokens */
+  --frost:          #1E2736;
+  --mist:           #2A3447;
+  --silver:         #4E6280;
+  --graphite:       #7C8FA6;
+  --white:          #FFFFFF;
+
+  /* Glass */
+  --glass-blur:     20px;
+  --glass-border:   rgba(99, 102, 241, 0.12);
+
+  /* Gradients */
+  --banner-bg:      linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  --banner-accent:  linear-gradient(90deg, #6366F1 0%, #818CF8 100%);
+  --progress-fill:  linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%);
+
+  /* Shadows */
+  --card-shadow:       0 1px 2px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.3);
+  --card-shadow-hover: 0 2px 4px rgba(0,0,0,0.5), 0 16px 48px rgba(0,0,0,0.4);
+  --accent-shadow:     0 0 24px rgba(99, 102, 241, 0.18);
+
+  /* Radii */
+  --radius-xl: 20px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+
+  /* Status Colors — Dark Mode */
+  --status-active: #0a84ff;
+  --status-active-bg: rgba(10, 132, 255, 0.15);
+  --status-done: #10b981;
+  --status-done-bg: rgba(16, 185, 129, 0.15);
+  --status-pending: #7c8fa6;
+  --status-pending-bg: rgba(124, 143, 166, 0.15);
+
+  color-scheme: dark;
+  font-family: 'Inter', 'Oswald', sans-serif;
+}
+
+/* ════════════════════════════════════════════════════════════
+   2. DESIGN TOKENS — LIGHT
+   Warm slate-50 bg · white cards · indigo accent
+   ════════════════════════════════════════════════════════════ */
+.blanner-body[data-theme="light"] {
+  /* Luxury Surfaces (Inspired by features2.html) */
+  --body-bg:        #fcfaf8; 
+  --card-bg:        #FFFFFF;
+  --card-bg-solid:  #FFFFFF;
+  --deep:           #FFFFFF;
+
+  /* Accent — Bronze/Gold Luxury */
+  --accent-main:    #92400e;
+  --accent-glow:    #b45309;
+  --accent:         #92400e;
+
+  /* Charts */
+  --chart-blue:     #334155;
+  --chart-purple:   #92400e;
+
+  /* Text hierarchy — Slate Professional */
+  --text-primary:   #0f172a;
+  --text-secondary: #64748b;
+  --ink:            #0f172a;
+
+  /* Layer tokens */
+  --frost:          #f1f5f9;
+  --mist:           #e2e8f0;
+  --silver:         #94a3b8;
+  --graphite:       #475569;
+  --white:          #FFFFFF;
+
+  /* Glass */
+  --glass-border:   rgba(146, 64, 14, 0.08);
+
+  /* Gradients — The "Crnozlatna" Master (Slate to Bronze) */
+  --banner-bg:      linear-gradient(135deg, #0f172a 0%, #92400e 100%);
+  --banner-accent:  linear-gradient(90deg, #334155 0%, #92400e 100%);
+  --progress-fill:  linear-gradient(90deg, #92400e 0%, #b45309 100%);
+
+  /* Shadows — Softer, Premium */
+  --card-shadow:       0 1px 3px rgba(15,23,42,0.06), 0 10px 30px rgba(146,64,14,0.03);
+  --card-shadow-hover: 0 4px 8px rgba(15,23,42,0.08), 0 20px 60px rgba(146,64,14,0.08);
+  --accent-shadow:     0 4px 20px rgba(146, 64, 14, 0.15);
+
+  /* Status Colors — Light Mode */
+  --status-active: #0a84ff;
+  --status-active-bg: rgba(10, 132, 255, 0.08);
+  --status-done: #10b981;
+  --status-done-bg: rgba(16, 185, 129, 0.08);
+  --status-pending: #64748b;
+  --status-pending-bg: rgba(100, 116, 139, 0.08);
+
+  color-scheme: light;
+}
+
+/* ════════════════════════════════════════════════════════════
+   3. GLOBAL BASE — body, html, font smoothing
+   ════════════════════════════════════════════════════════════ */
+html {
+  font-size: 116%;
+}
+
+.blanner-body {
+  font-family: 'Inter', 'Oswald', sans-serif;
+  background-color: var(--body-bg);
+}
+
+.blanner-body[data-theme="light"] {
+  background-color: var(--body-bg);
+}
+
+/* ════════════════════════════════════════════════════════════
+   4. APP SHELL
+   ════════════════════════════════════════════════════════════ */
+.bl-app-shell {
+  background: var(--body-bg);
+}
+
+.blanner-body[data-theme="light"] .bl-app-shell {
+  background: var(--body-bg);
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  height: 100vh;
+  margin: 0;
+}
+
+/* ════════════════════════════════════════════════════════════
+   5. SIDEBAR — refined dark + light
+   ════════════════════════════════════════════════════════════ */
+.bl-sidebar {
+  background: var(--deep);
+  border-right: 1px solid var(--mist);
+  border-radius: 0;
+  margin: 0;
+  height: 100%;
+  width: 210px;
+}
+
+.blanner-body[data-theme="light"] .bl-sidebar {
+  background: #f8f6f4 !important;
+  border-right: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+  height: 100vh;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+/* Logo */
+.bl-logo span {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+/* Nav items */
+.bl-nav-item {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.785rem;
+  font-weight: 500;
+  padding: 0.6rem 0.875rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  gap: 0.625rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.bl-nav-item:hover {
+  background: var(--frost);
+  color: var(--text-primary);
+}
+
+.bl-nav-item.active {
+  background: rgba(146, 64, 14, 0.1);
+  color: var(--accent-main) !important;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+}
+
+.blanner-body[data-theme="light"] .bl-nav-item.active {
+  background: rgba(146, 64, 14, 0.08) !important;
+  color: var(--accent-main) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.blanner-body[data-theme="light"] .bl-nav-item:hover {
+  background: var(--frost) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.blanner-body[data-theme="light"] .bl-nav-item:hover svg {
+  color: var(--text-primary) !important;
+}
+
+.blanner-body[data-theme="light"] .bl-nav-item.active svg {
+  color: var(--accent-main) !important;
+}
+
+/* User avatar — indigo */
+.bl-user-avatar {
+  background: var(--accent-main);
+  color: #FFFFFF;
+}
+
+/* ════════════════════════════════════════════════════════════
+   6. HEADER / TOPBAR
+   ════════════════════════════════════════════════════════════ */
+.bl-header-title-row h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+}
+
+.blanner-body[data-theme="light"] .bl-header-title-row h1 {
+  background: linear-gradient(135deg, #0f172a 0%, #92400e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bl-proj-badge {
+  background: rgba(146, 64, 14, 0.06);
+  border-color: rgba(146, 64, 14, 0.15);
+  color: var(--accent-main);
+}
+
+.bl-proj-switch-btn:hover {
+  background: rgba(146, 64, 14, 0.08);
+  border-color: var(--accent-main);
+  color: var(--accent-main);
+}
+
+.bl-edit-btn:hover {
+  background: rgba(146, 64, 14, 0.08);
+  border-color: var(--accent-main);
+  color: var(--accent-main);
+}
+
+.bl-header-dates {
+  color: var(--accent-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+/* ════════════════════════════════════════════════════════════
+   7. CARDS
+   ════════════════════════════════════════════════════════════ */
+.bl-card {
+  background: var(--card-bg);
+  border: 1px solid var(--mist);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.bl-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+.blanner-body[data-theme="light"] .bl-card,
+.blanner-body[data-theme="light"] .bl-ov-card,
+.blanner-body[data-theme="light"] .bl-phase-card,
+.blanner-body[data-theme="light"] .bl-task-card,
+.blanner-body[data-theme="light"] .bl-worker-card,
+.blanner-body[data-theme="light"] .card {
+  background: #FFFFFF !important;
+  border: 1px solid var(--mist) !important;
+  box-shadow: var(--card-shadow) !important;
+  border-radius: var(--radius-lg) !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.blanner-body[data-theme="light"] .bl-card:hover,
+.blanner-body[data-theme="light"] .bl-ov-card:hover,
+.blanner-body[data-theme="light"] .bl-phase-card:hover {
+  box-shadow: var(--card-shadow-hover) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  transform: translateY(-1px);
+}
+
+/* ════════════════════════════════════════════════════════════
+   8. BUTTONS
+   ════════════════════════════════════════════════════════════ */
+.bl-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.bl-btn-primary {
+  background: var(--accent-main);
+  color: #FFFFFF;
+  border: none;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.bl-btn-primary:hover {
+  background: #5254CC;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.blanner-body[data-theme="light"] .bl-btn-primary {
+  background: #6366F1;
+  color: #FFFFFF;
+  border: none;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.blanner-body[data-theme="light"] .bl-btn-primary:hover {
+  background: #5254CC;
+}
+
+.blanner-body[data-theme="light"] .bl-btn {
+  background: var(--frost);
+  border: 1px solid var(--mist);
+  color: var(--text-primary);
+}
+
+/* Destructive */
+.bl-btn-danger {
+  background: rgba(239,68,68,0.1);
+  color: #EF4444;
+  border: 1px solid rgba(239,68,68,0.2);
+}
+
+.bl-btn-danger:hover {
+  background: #EF4444;
+  color: #FFFFFF;
+  border-color: #EF4444;
+}
+
+/* ════════════════════════════════════════════════════════════
+   9. FORM INPUTS
+   ════════════════════════════════════════════════════════════ */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  background: var(--card-bg);
+  border: 1px solid var(--mist);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent-main);
+  box-shadow: 0 0 0 3px rgba(146, 64, 14, 0.08);
+  background: var(--card-bg);
+  outline: none;
+}
+
+label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* ════════════════════════════════════════════════════════════
+   10. OVERVIEW — KPI Cards
+   ════════════════════════════════════════════════════════════ */
+.bl-ov-card-title,
+.bl-ov-card-title.bl-card-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.bl-ov-budget-val {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+/* Progress bar fill */
+.bl-progress-fill {
+  background: var(--progress-fill);
+  border-radius: 100px;
+}
+
+/* ════════════════════════════════════════════════════════════
+   11. PHASE CARDS
+   ════════════════════════════════════════════════════════════ */
+.bl-phase-card {
+  border-left: 3px solid var(--mist);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bl-phase-card:hover {
+  border-left-color: var(--accent-main);
+}
+
+.bl-phase-pending   { border-left-color: var(--mist); }
+.bl-phase-active,
+.bl-phase-in_progress { border-left-color: var(--accent-main); }
+.bl-phase-done      { border-left-color: #059669; }
+.bl-phase-paused    { border-left-color: #D97706; }
+
+.bl-phase-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.bl-phase-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent-main);
+  opacity: 0.8;
+}
+
+/* Status badges */
+.bl-status-badge {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+}
+
+.bl-status-pending   { background: var(--status-pending-bg); color: var(--status-pending); border-color: rgba(124, 143, 166, 0.2); }
+.bl-status-active,
+.bl-status-in_progress { background: var(--status-active-bg); color: var(--status-active); border-color: rgba(10, 132, 255, 0.2); }
+.bl-status-done      { background: var(--status-done-bg); color: var(--status-done); border-color: rgba(16, 185, 129, 0.2); }
+.bl-status-paused    { background: rgba(245,158,11,0.1); color: #FCD34D; border: 1px solid rgba(245,158,11,0.25); }
+
+/* Light mode specific adjustments for contrast if needed */
+.blanner-body[data-theme="light"] .bl-status-pending { border-color: rgba(100, 116, 139, 0.15); }
+.blanner-body[data-theme="light"] .bl-status-active,
+.blanner-body[data-theme="light"] .bl-status-in_progress { border-color: rgba(10, 132, 255, 0.15); }
+.blanner-body[data-theme="light"] .bl-status-done { border-color: rgba(16, 185, 129, 0.15); }
+
+/* ════════════════════════════════════════════════════════════
+   12. TASK CARDS (Kanban)
+   ════════════════════════════════════════════════════════════ */
+.bl-task-card {
+  background: var(--card-bg);
+  border: 1px solid var(--mist);
+  border-radius: var(--radius-md);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.bl-task-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  border-color: rgba(99, 102, 241, 0.2);
+  transform: translateY(-1px);
+}
+
+.blanner-body[data-theme="light"] .bl-task-card {
+  background: #FFFFFF !important;
+  border: 1px solid var(--mist) !important;
+}
+
+.bl-task-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.845rem;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+/* Kanban column headers */
+.bl-kanban-col-header {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* ════════════════════════════════════════════════════════════
+   13. CHIPS — Phases meta, Prio, Status
+   ════════════════════════════════════════════════════════════ */
+.bl-ph-meta-chip {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--mist);
+  background: var(--frost);
+  color: var(--text-secondary);
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.bl-ph-meta-chip:hover {
+  border-color: var(--accent-main);
+  color: var(--accent-main);
+}
+
+.bl-prio-chip {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  padding: 3px 8px;
+  border: 1px solid;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: filter 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.bl-prio-chip:hover {
+  filter: brightness(0.82);
+}
+
+/* ════════════════════════════════════════════════════════════
+   14. WORKERS
+   ════════════════════════════════════════════════════════════ */
+.bl-worker-card {
+  border-radius: var(--radius-md);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.bl-worker-badge {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+/* ════════════════════════════════════════════════════════════
+   15. ICON BUTTONS
+   ════════════════════════════════════════════════════════════ */
+.bl-icon-btn {
+  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.bl-icon-btn:hover {
+  background: var(--frost);
+  color: var(--text-primary);
+}
+
+.bl-icon-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+/* ════════════════════════════════════════════════════════════
+   16. PROGRESS BARS
+   ════════════════════════════════════════════════════════════ */
+.bl-progress-track {
+  background: var(--mist);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.bl-progress-fill {
+  background: var(--progress-fill);
+  border-radius: 100px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ════════════════════════════════════════════════════════════
+   17. GANTT — premium bar colors
+   ════════════════════════════════════════════════════════════ */
+.bl-gantt-toggle-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--mist);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.bl-gantt-toggle-btn:hover {
+  border-color: var(--accent-main);
+  color: var(--accent-main);
+}
+
+.bl-gantt-toggle-btn.active {
+  border-color: var(--accent-main);
+  color: var(--accent-main);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+/* Gantt phase bar label */
+.bl-gantt-phase-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.785rem;
+  letter-spacing: -0.01em;
+}
+
+.bl-gantt-phase-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+}
+
+/* Status pill */
+.bl-gantt-status-pill {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.575rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+}
+
+.bl-gantt-status-pill.status-pending   { background: rgba(100,116,139,0.15); color: #94A3B8; border-color: rgba(100,116,139,0.2); }
+.bl-gantt-status-pill.status-active,
+.bl-gantt-status-pill.status-in_progress { background: rgba(99,102,241,0.12); color: #818CF8; border-color: rgba(99,102,241,0.2); }
+.bl-gantt-status-pill.status-done      { background: rgba(34,197,94,0.1); color: #4ADE80; border-color: rgba(34,197,94,0.2); }
+.bl-gantt-status-pill.status-paused    { background: rgba(245,158,11,0.1); color: #FCD34D; border-color: rgba(245,158,11,0.2); }
+
+/* Light mode Gantt status pills */
+.blanner-body[data-theme="light"] .bl-gantt-status-pill.status-pending   { color: #64748B; background: rgba(100,116,139,0.08); }
+.blanner-body[data-theme="light"] .bl-gantt-status-pill.status-active,
+.blanner-body[data-theme="light"] .bl-gantt-status-pill.status-in_progress { color: #6366F1; background: rgba(99,102,241,0.08); }
+.blanner-body[data-theme="light"] .bl-gantt-status-pill.status-done      { color: #16A34A; background: rgba(34,197,94,0.08); }
+.blanner-body[data-theme="light"] .bl-gantt-status-pill.status-paused    { color: #D97706; background: rgba(245,158,11,0.08); }
+
+/* Today line — indigo instead of red */
+.bl-gantt-today-line {
+  border-left: 2px solid rgba(99, 102, 241, 0.7);
+}
+
+.bl-gantt-today-dot {
+  background: var(--accent-main);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+}
+
+/* ════════════════════════════════════════════════════════════
+   18. OVERVIEW — progress rows, KPI strip
+   ════════════════════════════════════════════════════════════ */
+.bl-ov-kpi-strip {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.bl-ov-kpi-val {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+}
+
+.bl-ov-kpi-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* ════════════════════════════════════════════════════════════
+   19. MODAL — Premium glass surface
+   ════════════════════════════════════════════════════════════ */
+.bl-modal {
+  border-radius: var(--radius-xl);
+  background: var(--card-bg);
+  border: 1px solid var(--mist);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.blanner-body[data-theme="light"] .bl-modal {
+  background: #FFFFFF;
+  border-color: var(--mist);
+  box-shadow: 0 8px 32px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.06);
+}
+
+.bl-modal-header {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+/* Modal overlay scrim */
+.bl-modal-overlay,
+.bl-overlay {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.blanner-body[data-theme="light"] .bl-modal-overlay,
+.blanner-body[data-theme="light"] .bl-overlay {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+/* ════════════════════════════════════════════════════════════
+   20. LANGUAGE / CURRENCY BUTTONS
+   ════════════════════════════════════════════════════════════ */
+.bl-lang-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.63rem;
+  font-weight: 600;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+}
+
+.bl-lang-btn.active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: var(--accent-main);
+  box-shadow: none;
+}
+
+.blanner-body[data-theme="light"] .bl-lang-btn.active {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.2);
+  color: #6366F1;
+}
+
+/* ════════════════════════════════════════════════════════════
+   21. THEME TOGGLE
+   ════════════════════════════════════════════════════════════ */
+.bl-theme-toggle {
+  border-radius: 8px;
+  background: var(--frost);
+  border: 1px solid var(--mist);
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.bl-theme-toggle:hover {
+  border-color: var(--accent-main);
+  color: var(--accent-main);
+  transform: rotate(20deg);
+}
+
+/* ════════════════════════════════════════════════════════════
+   22. LIGHT THEME — Lucide icons, misc overrides
+   ════════════════════════════════════════════════════════════ */
+.blanner-body[data-theme="light"] [data-lucide] {
+  color: var(--text-secondary) !important;
+}
+
+.blanner-body[data-theme="light"] .bl-nav-item.active [data-lucide],
+.blanner-body[data-theme="light"] .bl-nav-item.active svg {
+  color: var(--accent-main) !important;
+}
+
+/* Sidebar bottom separator */
+.blanner-body[data-theme="light"] .bl-sidebar-footer {
+  border-top: 1px solid var(--mist);
+}
+
+/* ════════════════════════════════════════════════════════════
+   23. SCROLLBARS — thin, Bronze tint
+   ════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 100px; }
+::-webkit-scrollbar-thumb:hover { background: var(--silver); }
+
+/* ════════════════════════════════════════════════════════════
+   24. TOAST
+   ════════════════════════════════════════════════════════════ */
+.bl-toast {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  border: 1px solid var(--mist);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  color: var(--text-primary);
+}
+
+.blanner-body[data-theme="light"] .bl-toast {
+  background: #FFFFFF;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.12);
+}
+
+/* ════════════════════════════════════════════════════════════
+   25. PUNCH LIST + CHANGES
+   ════════════════════════════════════════════════════════════ */
+.bl-punch-item {
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.bl-punch-item:hover {
+  background: var(--frost);
+}
+
+/* ════════════════════════════════════════════════════════════
+   26. TABLE
+   ════════════════════════════════════════════════════════════ */
+.bl-table th {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.bl-table td {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--text-primary);
+}
+
+/* ════════════════════════════════════════════════════════════
+   27. SECTION PAGE TITLE
+   ════════════════════════════════════════════════════════════ */
+.bl-page-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.blanner-body[data-theme="light"] .bl-page-title {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* ════════════════════════════════════════════════════════════
+   28. CALENDAR — sync with indigo accent
+   ════════════════════════════════════════════════════════════ */
+.blanner-body .fc .fc-button-active {
+  background: var(--accent-main) !important;
+  color: #FFFFFF !important;
+  border-color: var(--accent-main) !important;
+}
+
+.blanner-body .fc .fc-button-primary:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--accent-main);
+  color: var(--accent-main);
+}
+
+/* ════════════════════════════════════════════════════════════
+   29. HEADER SECTION LABEL (JetBrains mono labels)
+   ════════════════════════════════════════════════════════════ */
+[style*="JetBrains Mono"][style*="text-transform:uppercase"],
+[style*="JetBrains Mono"][style*="text-transform: uppercase"] {
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+/* ════════════════════════════════════════════════════════════
+   30. OVERVIEW HERO BANNER — indigo gradient
+   ════════════════════════════════════════════════════════════ */
+.bl-ov-hero {
+  background: var(--banner-bg);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.bl-ov-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(139, 92, 246, 0.3) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════════════════
+   31. ADMIN BANNER (if visible)
+   ════════════════════════════════════════════════════════════ */
+#adminTemplateBanner {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--accent-main);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+}
+
+/* ════════════════════════════════════════════════════════════
+   32. PHASE CARD — task items
+   ════════════════════════════════════════════════════════════ */
+.bl-ph-task {
+  border-radius: var(--radius-sm);
+  transition: background 0.12s ease;
+}
+
+.bl-ph-task:hover {
+  background: var(--frost);
+}
+
+.bl-ph-task-done .bl-ph-task-title {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+/* ════════════════════════════════════════════════════════════
+   33. SELECTION highlight
+   ════════════════════════════════════════════════════════════ */
+::selection {
+  background: rgba(99, 102, 241, 0.2);
+  color: inherit;
+}
+
+/* ════════════════════════════════════════════════════════════
+   34. THEME SWITCHER
+   — base chip/tile/menu CSS lives in planner.css (always loaded)
+   — v2-specific overrides only here if needed
+   ════════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════
+   35. PRINT — preserve for PDF export
+   ════════════════════════════════════════════════════════════ */
+@media print {
+  .blanner-body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   35. TASK MODAL — premium redesign
+   Dark/light token-aware; indigo accent; Inter typography
+   ════════════════════════════════════════════════════════════ */
+
+/* Modal container */
+.bl-modal {
+  border-radius: var(--radius-xl) !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--mist) !important;
+}
+
+/* Header strip */
+.bl-modal-header {
+  background: var(--card-bg) !important;
+  border-bottom: 1px solid var(--mist) !important;
+  padding: 1.25rem 1.75rem !important;
+}
+
+.bl-modal-header h3 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  letter-spacing: -0.03em !important;
+  text-transform: none !important;
+  color: var(--text-primary) !important;
+}
+
+/* Guide & Sketch pill — indigo tint */
+.bl-modal-guide-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  padding: 5px 12px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: var(--accent-main);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.bl-modal-guide-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* Close button — icon badge */
+.bl-modal-close {
+  background: var(--frost) !important;
+  border: 1px solid var(--mist) !important;
+  border-radius: 8px !important;
+  width: 30px !important;
+  height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.75rem !important;
+  color: var(--text-secondary) !important;
+  opacity: 1 !important;
+}
+
+.bl-modal-close:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #EF4444 !important;
+}
+
+/* Body padding */
+.bl-modal-body {
+  padding: 1.75rem !important;
+}
+
+/* Inputs + selects */
+.bl-input-premium {
+  background: var(--frost) !important;
+  border: 1.5px solid var(--mist) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.875rem !important;
+}
+
+.bl-input-premium::placeholder {
+  color: var(--graphite);
+  opacity: 0.7;
+}
+
+.bl-input-premium:focus {
+  background: var(--card-bg) !important;
+  border-color: var(--accent-main) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+}
+
+/* Labels */
+.bl-label-premium {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Form footer (cancel / save row) */
+.bl-modal-form-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  border-top: 1px solid var(--mist);
+  padding-top: 1.5rem;
+  margin-top: 0;
+}
+
+/* Cancel button */
+.bl-btn-cancel {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  background: var(--frost) !important;
+  border: 1px solid var(--mist) !important;
+  color: var(--text-secondary) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 9px 20px !important;
+}
+
+.bl-btn-cancel:hover {
+  background: var(--mist) !important;
+  border-color: var(--silver) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Save button — indigo */
+.bl-btn-save {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  background: var(--accent-main) !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 9px 24px !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3) !important;
+}
+
+.bl-btn-save:hover {
+  background: var(--accent-glow) !important;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+/* Inline Add Buttons */
+.bl-ph-add-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  background: rgba(255,255,255,0.02);
+  border: 1px dashed var(--mist);
+  border-radius: 12px;
+  color: var(--silver);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.bl-ph-add-inline:hover {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: var(--accent-main);
+  color: var(--accent-main);
+}
+
+.bl-task-add-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.4rem;
+  margin: 0.25rem 0;
+  background: transparent;
+  border: 1px dashed var(--mist);
+  border-radius: 6px;
+  color: var(--graphite);
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0.5;
+}
+.bl-task-add-inline:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.03);
+  border-color: var(--silver);
+  color: var(--text-primary);
+}
+
+/* ════════════════════════════════════════════════════════════
+   25. EDITORIAL CALENDAR OVERRIDES (FullCalendar)
+   ════════════════════════════════════════════════════════════ */
+.fc {
+  --fc-border-color: var(--mist);
+  --fc-button-bg-color: var(--frost);
+  --fc-button-border-color: var(--mist);
+  --fc-button-hover-bg-color: var(--mist);
+  --fc-button-active-bg-color: var(--accent-main);
+  --fc-button-active-border-color: var(--accent-main);
+  --fc-event-bg-color: var(--accent-main);
+  --fc-event-border-color: var(--accent-main);
+  --fc-today-bg-color: rgba(99, 102, 241, 0.05);
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.fc-toolbar-title {
+  font-family: 'Oswald', sans-serif !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+.fc-col-header-cell-cushion {
+  font-family: 'Oswald', sans-serif !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.1em !important;
+  color: var(--text-secondary) !important;
+  padding: 1rem 0 !important;
+}
+
+.fc-daygrid-day-number {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8rem !important;
+  opacity: 0.6 !important;
+  padding: 0.5rem !important;
+}
+
+.fc-event {
+  border-radius: 6px !important;
+  padding: 2px 4px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  border: none !important;
+  background: var(--accent-main) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  border: 1px solid var(--mist) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   26. GLOBAL ORBS & BACKGROUNDS
+   ════════════════════════════════════════════════════════════ */
+.bl-orb {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: -1;
+  opacity: 0.15;
+  pointer-events: none;
+  animation: orbFloat 20s infinite alternate ease-in-out;
+}
+.bl-orb-1 { background: var(--accent-main); top: -200px; right: -100px; }
+.bl-orb-2 { background: #ec4899; bottom: -200px; left: -100px; animation-delay: -5s; }
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, 50px) scale(1.1); }
+}
+
+.bl-grid-overlay {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(var(--mist) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mist) 1px, transparent 1px);
+  background-size: 100px 100px;
+  pointer-events: none;
+  z-index: -2;
+  opacity: 0.05;
+}
+
+/* ════════════════════════════════════════════════════════════
+   27. TAB TRANSITIONS & PANELS
+   ════════════════════════════════════════════════════════════ */
+.bl-tab {
+  animation: tabFadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.editorial-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(13, 17, 23, 0.8);
+  backdrop-filter: blur(20px);
+  margin-top: -3rem;
+  padding-top: 3rem !important;
+}
+
+.blanner-body[data-theme="light"] .editorial-page-header {
+  background: rgba(241, 245, 249, 0.8);
+}

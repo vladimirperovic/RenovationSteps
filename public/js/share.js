@@ -6,7 +6,7 @@ function renderShareSection() {
   const section = document.getElementById('shareTokenSection');
   const revokeBtn = document.getElementById('revokeShareBtn');
   if (token) {
-    const url = window.location.origin + '/planner.html?project=' + currentProject + '&token=' + token;
+    const url = window.location.origin + '/index.html?project=' + currentProject + '&token=' + token;
     document.getElementById('shareTokenInput').value = url;
     section.style.display = 'block';
     if (revokeBtn) revokeBtn.style.display = 'inline-flex';

@@ -114,7 +114,7 @@ function exportPDF() {
     
     <div style="width:100%;max-width:850px;margin:0 auto;color:#000;font-family:'Helvetica Neue',Arial,sans-serif;padding-bottom:40px;background:#fff;">
       <div style="border-bottom:3px solid #000;padding-bottom:1.5rem;margin-bottom:2rem;">
-        <div style="font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:#666;margin-bottom:0.4rem;font-weight:700;">AA / STUDIO — Izveštaj Projekta</div>
+        <div style="font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:#666;margin-bottom:0.4rem;font-weight:700;">Construction Planner — Izveštaj Projekta</div>
         <h1 style="font-size:2.2rem;font-weight:800;margin:0 0 0.3rem;">${(p.title||'Project Report').replace(/</g, '&lt;')}</h1>
         <div style="color:#222;font-size:0.875rem;">${(p.address||'').replace(/</g, '&lt;')} &nbsp;|&nbsp; Datum: ${new Date().toLocaleDateString('sr-RS')}</div>
       </div>
@@ -128,7 +128,7 @@ function exportPDF() {
       </div>
       
       <div style="border-top:1px solid #e5e5ea;padding-top:1.5rem;margin-top:3rem;font-size:0.75rem;color:#666;display:flex;justify-content:space-between;font-weight:600;">
-        <span>AA / Studio Belgrade — aastudiobelgrade.rs</span>
+        <span>AA / Studio Belgrade — your-domain.com</span>
         <span>Generisano: ${new Date().toLocaleString('sr-RS')}</span>
       </div>
     </div>
@@ -142,107 +142,52 @@ function exportPDF() {
 // THEME SYSTEM — 4 themes: v2-dark, v2-light, v1-dark, v1-light
 // =============================================
 const _THEME_META = {
-  'v2-dark':  { bg: '#0D1117', bd: '#6366F1', label: 'Indigo' },
-  'v2-light': { bg: '#F1F5F9', bd: '#6366F1', label: 'Slate'  },
   'v1-dark':  { bg: '#1c1c1e', bd: '#636366', label: 'Classic' },
   'v1-light': { bg: '#f5f5f5', bd: '#c7c7cc', label: 'Light'  },
 };
 
-// Initialize the theme menu on load
+// Initialize the theme menu on load — (Disabled as we now use a single toggle icon)
 (function createThemeMenu() {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById('themeMenu')) return;
-
-  const menu = document.createElement('div');
-  menu.id = 'themeMenu';
-  menu.className = 'bl-theme-menu';
-  menu.innerHTML = `
-    <div class="bl-theme-menu-header" style="padding: 10px 10px 10px 31px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--mist); margin-bottom: 4px;">Select Theme</div>
-    <button class="bl-theme-menu-item" data-theme-pick="v2-dark"  onclick="setTheme('v2-dark')">
-      <span class="bl-theme-dot" style="background:#0D1117; border-color:#6366F1;"></span> Indigo Dark
-    </button>
-    <button class="bl-theme-menu-item" data-theme-pick="v2-light" onclick="setTheme('v2-light')">
-      <span class="bl-theme-dot" style="background:#F1F5F9; border-color:#6366F1;"></span> Indigo Light
-    </button>
-    <button class="bl-theme-menu-item" data-theme-pick="v1-dark"  onclick="setTheme('v1-dark')">
-      <span class="bl-theme-dot" style="background:#1c1c1e; border-color:#636366;"></span> Classic Dark
-    </button>
-    <button class="bl-theme-menu-item" data-theme-pick="v1-light" onclick="setTheme('v1-light')">
-      <span class="bl-theme-dot" style="background:#f5f5f5; border-color:#c7c7cc;"></span> Classic Light
-    </button>
-  `;
-  document.body.appendChild(menu);
+  // Logic removed as per user request: "without menu"
 })();
 
 function setTheme(name) {
-  const body  = document.querySelector('.blanner-body') || document.body;
+  const body = document.querySelector('.blanner-body') || document.body;
   const v2css = document.getElementById('v2css');
-
-  const isLight = name === 'v1-light' || name === 'v2-light';
-  const isV2    = name === 'v2-dark'  || name === 'v2-light';
-
+  const isLight = name === 'v1-light';
+  
   // Apply color mode
   if (isLight) body.setAttribute('data-theme', 'light');
   else         body.removeAttribute('data-theme');
 
-  // Toggle planner2.css (Indigo theme)
-  if (v2css) {
-    if (isV2) v2css.removeAttribute('disabled');
-    else      v2css.setAttribute('disabled', 'true');
+  // Disable planner2.css (Indigo theme) as it's no longer used
+  if (v2css) v2css.setAttribute('disabled', 'true');
+
+  // Update toggle icon in sidebar
+  const icon = document.getElementById('themeToggleIcon');
+  if (icon) {
+    // Lucide path for Moon (if Light theme active -> show Moon to switch to Dark)
+    // Actually, let's show Sun for Light and Moon for Dark
+    if (isLight) {
+        icon.innerHTML = '<path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M17 12a5 5 0 1 1-10 0 5 5 0 0 1 10 0z"></path>';
+    } else {
+        icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    }
   }
 
-  // Sync chip: dot color + label
-  const meta = _THEME_META[name];
-  if (meta) {
-    const dot = document.getElementById('themeChipDot');
-    const lbl = document.getElementById('themeChipLabel');
-    if (dot) { dot.style.background = meta.bg; dot.style.borderColor = meta.bd; }
-    if (lbl) lbl.textContent = meta.label;
-  }
-
-  // Sync active state on menu items and settings tiles
-  document.querySelectorAll('.bl-theme-menu-item, .bl-theme-tile').forEach(btn => {
+  // Sync active state on settings tiles
+  document.querySelectorAll('.bl-theme-tile').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.themePick === name);
   });
 
-  // Close dropdown if open
-  const menu = document.getElementById('themeMenu');
-  if (menu) menu.classList.remove('open');
-
-  // Legacy sun/moon icon button (planner.html)
-  const legacyBtn = document.getElementById('themeToggle');
-  if (legacyBtn && !legacyBtn.querySelector('svg')) {
-    legacyBtn.textContent = isLight ? '🌙' : '☀';
-  }
-
   localStorage.setItem('planner_theme', name);
 
-  // Re-render calendar and gantt so they pick up new CSS variables
+  // Re-render calendar and gantt
   if (typeof renderCalendar === 'function') renderCalendar();
   if (typeof renderGantt === 'function') renderGantt();
 }
 
-// Toggle the theme dropdown open/closed
-function toggleThemeMenu(e) {
-  if (e && e.stopPropagation) e.stopPropagation();
-  const menu = document.getElementById('themeMenu');
-  const btn  = document.getElementById('themeChipBtn');
-  if (!menu || !btn) return;
-
-  const isOpen = menu.classList.contains('open');
-
-  if (isOpen) {
-    menu.classList.remove('open');
-    return;
-  }
-
-  // Position the fixed dropdown above the chip button
-  const rect = btn.getBoundingClientRect();
-  menu.style.left   = rect.left + 'px';
-  menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
-  menu.style.top    = '';
-  menu.classList.add('open');
-}
+function toggleThemeMenu() { /* Removed as per user request */ }
 
 // Close dropdown on any outside click
 document.addEventListener('click', function() {
@@ -250,36 +195,19 @@ document.addEventListener('click', function() {
   if (menu) menu.classList.remove('open');
 });
 
-// Cycle to next theme (used by settings panel and planner.html toggle)
+// Toggle between v1-dark and v1-light
 function toggleTheme() {
-  const v2css  = document.getElementById('v2css');
-  const themes = v2css
-    ? ['v2-dark', 'v2-light', 'v1-dark', 'v1-light']
-    : ['v1-dark', 'v1-light'];
-  const current = localStorage.getItem('planner_theme') || themes[0];
-  const mapped  = (current === 'dark') ? 'v1-dark' : (current === 'light') ? 'v1-light' : current;
-  const idx     = themes.indexOf(mapped);
-  setTheme(themes[(idx + 1) % themes.length]);
+  const current = localStorage.getItem('planner_theme') || 'v1-dark';
+  const next = (current === 'v1-light') ? 'v1-dark' : 'v1-light';
+  setTheme(next);
 }
 
 // Initialize theme from localStorage on page load
 (function initTheme() {
   setTimeout(() => {
-    const v2css  = document.getElementById('v2css');
-    const saved  = localStorage.getItem('planner_theme');
-    const themes = v2css
-      ? ['v2-dark', 'v2-light', 'v1-dark', 'v1-light']
-      : ['v1-dark', 'v1-light'];
-    
-    if (saved && themes.includes(saved)) {
-      setTheme(saved);
-    } else if (saved === 'dark') {
-      setTheme('v1-dark');
-    } else if (saved === 'light') {
-      setTheme('v1-light');
-    } else {
-      setTheme(themes[0]);
-    }
+    const saved = localStorage.getItem('planner_theme');
+    if (saved === 'v1-light' || saved === 'light') setTheme('v1-light');
+    else setTheme('v1-dark');
   }, 100);
 })();
 

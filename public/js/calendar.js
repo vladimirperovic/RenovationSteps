@@ -58,6 +58,15 @@ function switchCalView(view) {
   calView = view;
   document.querySelectorAll('[data-calview]').forEach(b => {
     b.classList.toggle('active', b.dataset.calview === view);
+    if (b.classList.contains('active')) {
+      b.style.background = 'var(--card-bg)';
+      b.style.color = 'var(--text-primary)';
+      b.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+    } else {
+      b.style.background = 'none';
+      b.style.color = 'var(--text-secondary)';
+      b.style.boxShadow = 'none';
+    }
   });
   if (fullCal) fullCal.changeView(view);
 }
@@ -65,7 +74,12 @@ function switchCalView(view) {
 function toggleCalFilter(filter) {
   calFilters[filter] = !calFilters[filter];
   const btn = document.querySelector(`[data-filter="${filter}"]`);
-  if (btn) btn.classList.toggle('active', calFilters[filter]);
+  if (btn) {
+    btn.classList.toggle('active', calFilters[filter]);
+    const dot = btn.querySelector('.bl-filter-dot');
+    if (dot) dot.style.opacity = calFilters[filter] ? '1' : '0';
+    btn.style.opacity = calFilters[filter] ? '1' : '0.5';
+  }
   renderCalendar();
 }
 
@@ -128,10 +142,12 @@ function renderCalUpcoming() {
     let rel = diff === 0 ? t('date_today') : diff === 1 ? t('date_tomorrow') : t('date_in_days').replace('{n}', diff);
     const typeIcon = { phase: '▬', task: '·', material: '◆', payment: '!' }[ev.type] || '·';
     return `
-      <div class="bl-cal-upcoming-item-compact">
-        <span style="color:${ev.color};font-size:0.7rem;flex-shrink:0;font-weight:700;">${typeIcon}</span>
-        <span class="bl-cal-upcoming-label-compact">${esc(ev.label)}</span>
-        <span class="bl-cal-upcoming-rel-compact" style="color:${ev.color}">${rel}</span>
+      <div class="bl-cal-upcoming-item-compact" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 8px; transition: background 0.2s; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+        <div style="width: 24px; height: 24px; border-radius: 6px; background: ${ev.color}15; border: 1px solid ${ev.color}30; display: flex; align-items: center; justify-content: center; color: ${ev.color}; font-size: 0.7rem; font-weight: 900; flex-shrink: 0;">${typeIcon}</div>
+        <div style="flex: 1; overflow: hidden;">
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(ev.label)}</div>
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; color: ${ev.color}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">${rel}</div>
+        </div>
       </div>`;
   }).join('');
 }
@@ -252,54 +268,53 @@ function renderCalendar() {
 
       if (ep.type === 'phase') {
         const prog = ep.progress || 0;
-        const progBar = prog > 0
-          ? `<div style="height:2px;background:${arg.event.borderColor};opacity:0.6;width:${prog}%;border-radius:1px;margin-top:2px;"></div>`
-          : '';
         return { html: `
-          <div style="display:flex;flex-direction:column;gap:0;padding:1px 4px;overflow:hidden;width:100%;box-sizing:border-box;">
-            <div style="display:flex;align-items:center;gap:3px;overflow:hidden;">
-              <span style="font-size:0.55rem;font-weight:800;letter-spacing:0.06em;color:${arg.event.borderColor};flex-shrink:0;font-family:'JetBrains Mono',monospace;">${ep.num}</span>
-              <span style="font-size:0.7rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.01em;">${esc(title.substring(3))}</span>
-              ${prog > 0 && isMonth ? `<span style="font-size:0.55rem;opacity:0.7;flex-shrink:0;margin-left:auto;">${prog}%</span>` : ''}
+          <div style="display:flex;flex-direction:column;gap:2px;padding:4px 6px;overflow:hidden;width:100%;box-sizing:border-box;">
+            <div style="display:flex;align-items:center;gap:6px;overflow:hidden;">
+              <span style="font-size:0.55rem;font-weight:800;letter-spacing:0.1em;color:${arg.event.borderColor};flex-shrink:0;font-family:'JetBrains Mono',monospace;">PHASE</span>
+              <span style="font-size:0.75rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.01em;font-family:'Plus Jakarta Sans',sans-serif;">${esc(title.substring(3))}</span>
             </div>
-            ${progBar}
+            ${prog > 0 ? `
+            <div style="height:3px;background:rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;margin-top:2px;border:1px solid rgba(255,255,255,0.05);">
+              <div style="height:100%;background:${arg.event.borderColor};width:${prog}%;border-radius:10px;box-shadow:0 0 10px ${arg.event.borderColor}40;"></div>
+            </div>` : ''}
           </div>` };
       }
 
       if (ep.type === 'task') {
         const initials = _initials(ep.workerName);
-        const prioMark = ep.priority === 'high' ? `<span style="color:#EF4444;font-size:0.6rem;font-weight:900;flex-shrink:0;">!</span>` : '';
+        const prioMark = ep.priority === 'high' ? `<div style="width:6px;height:6px;border-radius:50%;background:#EF4444;flex-shrink:0;box-shadow:0 0 8px #EF4444;"></div>` : '';
         const workerBadge = initials
-          ? `<span style="font-size:0.5rem;font-weight:700;background:${arg.event.borderColor};color:${arg.event.backgroundColor};border-radius:3px;padding:0 3px;flex-shrink:0;letter-spacing:0.03em;">${initials}</span>`
+          ? `<span style="font-size:0.55rem;font-weight:800;background:rgba(255,255,255,0.05);color:var(--text-secondary);border:1px solid var(--mist);border-radius:4px;padding:1px 4px;flex-shrink:0;font-family:'JetBrains Mono',monospace;">${initials}</span>`
           : '';
-        const doneStyle = ep.done ? 'text-decoration:line-through;opacity:0.5;' : '';
+        const doneStyle = ep.done ? 'text-decoration:line-through;opacity:0.4;' : '';
         return { html: `
-          <div style="display:flex;align-items:center;gap:3px;padding:1px 4px;overflow:hidden;width:100%;box-sizing:border-box;">
+          <div style="display:flex;align-items:center;gap:6px;padding:4px 8px;overflow:hidden;width:100%;box-sizing:border-box;">
             ${prioMark}
-            <span style="font-size:0.7rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;${doneStyle}">${esc(title)}</span>
+            <span style="font-size:0.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;font-family:'Plus Jakarta Sans',sans-serif;${doneStyle}">${esc(title)}</span>
             ${workerBadge}
           </div>` };
       }
 
       if (ep.type === 'material') {
         const icon = ep.subtype === 'order' ? '▼' : '▲';
+        const label = ep.subtype === 'order' ? 'ORDER' : 'DELIVERY';
         return { html: `
-          <div style="display:flex;align-items:center;gap:3px;padding:1px 4px;overflow:hidden;width:100%;box-sizing:border-box;">
-            <span style="font-size:0.6rem;font-weight:900;flex-shrink:0;">${icon}</span>
-            <span style="font-size:0.7rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(title)}</span>
+          <div style="display:flex;align-items:center;gap:6px;padding:4px 8px;overflow:hidden;width:100%;box-sizing:border-box;">
+            <span style="font-size:0.55rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:${arg.event.borderColor};">${label}</span>
+            <span style="font-size:0.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Plus Jakarta Sans',sans-serif;">${esc(title)}</span>
           </div>` };
       }
 
       if (ep.type === 'payment') {
         return { html: `
-          <div style="display:flex;align-items:center;gap:3px;padding:1px 4px;overflow:hidden;width:100%;box-sizing:border-box;">
-            <span style="font-size:0.6rem;font-weight:900;flex-shrink:0;color:#EF4444;">$</span>
-            <span style="font-size:0.7rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(title)}</span>
+          <div style="display:flex;align-items:center;gap:6px;padding:4px 8px;overflow:hidden;width:100%;box-sizing:border-box;">
+            <span style="font-size:0.55rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:#EF4444;">DUE</span>
+            <span style="font-size:0.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Plus Jakarta Sans',sans-serif;color:#EF4444;">${esc(title)}</span>
           </div>` };
       }
 
-      // fallback
-      return { html: `<div style="padding:1px 4px;font-size:0.7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(title)}</div>` };
+      return { html: `<div style="padding:4px 8px;font-size:0.75rem;font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(title)}</div>` };
     },
 
     // ── Event mounted — apply custom styles ──────────────────────────────────

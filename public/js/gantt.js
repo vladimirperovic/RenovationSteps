@@ -43,9 +43,13 @@ function exportGanttPDF() {
 
 function changeGanttView(mode) {
   ganttViewMode = mode;
-  document.querySelectorAll('.bl-gantt-view-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.mode === mode);
-  });
+  // Use a more specific selector to avoid conflicts with calendar buttons
+  const ganttTab = document.getElementById('tab-gantt');
+  if (ganttTab) {
+    ganttTab.querySelectorAll('.bl-gantt-view-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+  }
   renderGantt();
 }
 
@@ -87,6 +91,56 @@ function renderGantt() {
   if (emptyEl) emptyEl.style.display = 'none';
   if (wrapEl)  wrapEl.style.display  = 'block';
   if (!container) return;
+
+  // ── Specialized List Mode ────────────────────────────────────────────────────
+  if (ganttViewMode === 'list') {
+    let listHtml = `
+      <div style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--mist); margin: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--mist); color: var(--text-secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">
+              <th style="padding: 1rem;">${t('gantt_phase_task')}</th>
+              <th style="padding: 1rem;">${t('label_start') || 'Start'}</th>
+              <th style="padding: 1rem;">${t('label_end') || 'End'}</th>
+              <th style="padding: 1rem;">${t('label_status') || 'Status'}</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+    appData.phases.forEach((ph, i) => {
+      const phTasks = appData.tasks.filter(tk => tk.phase_id === ph.id);
+      listHtml += `
+        <tr style="border-bottom: 1px solid var(--mist); background: rgba(255,255,255,0.02);">
+          <td style="padding: 1rem; font-weight: 700; color: var(--text-primary);">
+            <span style="opacity:0.4; margin-right: 0.75rem; font-family: 'JetBrains Mono', monospace;">${String(i + 1).padStart(2, '0')}</span>
+            ${esc(phaseTitle(ph))}
+          </td>
+          <td style="padding: 1rem; font-size: 0.85rem; color: var(--text-secondary);">${ph.start || '—'}</td>
+          <td style="padding: 1rem; font-size: 0.85rem; color: var(--text-secondary);">${ph.end || '—'}</td>
+          <td style="padding: 1rem;"><span class="bl-status-badge bl-status-${ph.status || 'pending'}">${statusLabel(ph.status)}</span></td>
+        </tr>`;
+
+      if (ganttShowTasks && phTasks.length > 0) {
+        phTasks.forEach(tk => {
+          listHtml += `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.02); opacity: 0.85;">
+              <td style="padding: 0.75rem 1rem 0.75rem 3.5rem; font-size: 0.85rem; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+                <span><span style="opacity: 0.4; margin-right: 0.5rem;">·</span>${esc(taskTitle(tk))}</span>
+                <button onclick="showTaskDetail('${esc(tk.title)}')" style="background:none; border:none; color:var(--accent-main); opacity:0.85; cursor:pointer;" title="How To Guide"><i data-lucide="info" style="width:14px; height:14px;"></i></button>
+              </td>
+              <td style="padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text-secondary);">${tk.start_date || '—'}</td>
+              <td style="padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text-secondary);">${tk.end_date || '—'}</td>
+              <td style="padding: 0.75rem 1rem; font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); opacity: 0.6;">${tk.status || (tk.done ? 'done' : 'todo')}</td>
+            </tr>`;
+        });
+      }
+    });
+
+    listHtml += `</tbody></table></div>`;
+    container.innerHTML = listHtml;
+    wrapEl.style.height = 'calc(100vh - 200px)'; // Adjust for header
+    return;
+  }
 
   // ── Compute date range ───────────────────────────────────────────────────────
   const allDates = validPhases.flatMap(ph => [new Date(ph.start), new Date(ph.end)]);
@@ -245,17 +299,29 @@ function renderGantt() {
         const colors = sc(st);
         const tCol   = colors.bar;
         const tProg  = colors.prog;
+        const prioColor = tk.priority === 'high' ? '#ef4444' : tk.priority === 'normal' ? '#eab308' : '#0a84ff';
+        const prioLabel = (tk.priority || 'normal').toUpperCase();
+
         rowsHtml += `
     <div class="bl-gantt-row bl-gantt-task-row">
       <div class="bl-gantt-label bl-gantt-task-label" onmousedown="event.stopPropagation()" onclick="event.stopPropagation(); editTask('${tk.id}')">
         <span class="bl-gantt-task-connector"></span>
         <span class="bl-gantt-task-dot" style="background:${tCol};${tk.done?'opacity:0.5':''}"></span>
-        <span class="bl-gantt-task-name${tk.done?' done':''}">${esc(taskTitle(tk))}</span>
+        <div style="flex:1; display:flex; flex-direction:column; gap:2px;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span class="bl-gantt-task-name${tk.done?' done':''}" style="font-size: 0.85rem;">${esc(taskTitle(tk))}</span>
+            <button onmousedown="event.stopPropagation()" onclick="event.stopPropagation(); showTaskDetail('${esc(tk.title)}')" style="background:none; border:none; color:var(--accent-main); opacity:0.85; cursor:pointer;" title="How To Guide"><i data-lucide="info" style="width:12px; height:12px;"></i></button>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.55rem; font-weight:800; color:${prioColor}; background:${prioColor}15; padding:1px 4px; border-radius:3px; border:1px solid ${prioColor}30; letter-spacing:0.02em;">${prioLabel}</span>
+            <span style="font-size:0.6rem; color:var(--text-secondary); opacity:0.5; text-transform:uppercase; font-weight:600;">${statusLabel(st)}</span>
+          </div>
+        </div>
       </div>
       <div class="bl-gantt-timeline">
         ${gridHtml}
-        <div class="bl-gantt-task-bar" onmousedown="event.stopPropagation()" onclick="event.stopPropagation(); editTask('${tk.id}')" style="cursor:pointer; left:${pct(tsOff)};width:${pct(tbW)};background:${tCol};border:1px solid ${tProg};${tk.status==='done'?'opacity:0.6':''}">
-          ${tk.done ? '<span class="bl-gantt-task-check">✓</span>' : ''}
+        <div class="bl-gantt-task-bar" onmousedown="event.stopPropagation()" onclick="event.stopPropagation(); editTask('${tk.id}')" style="cursor:pointer; left:${pct(tsOff)};width:${pct(tbW)};background:${tCol};border:1px solid ${tProg};${tk.status==='done'?'opacity:0.6':''}; border-radius:4px; height:12px; margin-top:4px; position:relative;">
+          ${tk.done ? '<span class="bl-gantt-task-check" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:8px; font-weight:900;">✓</span>' : ''}
         </div>
         ${todayHtml}
       </div>

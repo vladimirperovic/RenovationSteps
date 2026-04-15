@@ -592,3 +592,93 @@ async function applyTemplate(type) {
   await init();
   toast(added > 0 ? t('tpl_added_toast').replace('{n}', added) : t('tpl_exists_toast'));
 }
+
+// =============================================
+// ONBOARDING WIZARD LOGIC
+// =============================================
+
+let onboardSelection = 'blank';
+
+function showOnboarding() {
+  const overlay = document.getElementById('onboardOverlay');
+  if (overlay) {
+    overlay.classList.add('active');
+    // Ensure we are at Step 1
+    onboardBack(); 
+  }
+}
+
+function onboardSelect(type) {
+  onboardSelection = type;
+  document.getElementById('onboardStep1').style.display = 'none';
+  document.getElementById('onboardStep2').style.display = 'block';
+  
+  // Set default suggested name
+  const nameField = document.getElementById('onboardProjectName');
+  if (nameField) {
+      if (type === 'blank') nameField.value = "My Renovation";
+      else {
+          const names = { garsonjera: "Garsonjera", dvosoban: "Dvosoban Stan", trosoban: "Trosoban Stan" };
+          nameField.value = names[type] || "My Project";
+      }
+  }
+}
+
+function onboardBack() {
+  document.getElementById('onboardStep1').style.display = 'block';
+  document.getElementById('onboardStep1_Primary').style.display = 'block';
+  document.getElementById('onboardStep1_Paid').style.display = 'none';
+  document.getElementById('onboardStep2').style.display = 'none';
+}
+
+async function onboardApply() {
+  const title = document.getElementById('onboardProjectName').value || 'My Project';
+  const address = document.getElementById('onboardAddress').value || '';
+  const startDate = document.getElementById('onboardStartDate').value || new Date().toISOString().slice(0, 10);
+  const currency = document.getElementById('onboardCurrency').value || 'rsd';
+  
+  const includeCosts = document.getElementById('onboardIncludeCosts').checked;
+  const includeNotes = document.getElementById('onboardIncludeNotes').checked;
+  
+  const goBtn = document.getElementById('onboardGoBtn');
+  const goText = document.getElementById('onboardGoText');
+  const goSpinner = document.getElementById('onboardGoSpinner');
+  const progressArea = document.getElementById('onboardProgressArea');
+
+  if (goBtn) goBtn.disabled = true;
+  if (goText) goText.style.display = 'none';
+  if (goSpinner) goSpinner.style.display = 'inline-block';
+  if (progressArea) progressArea.style.display = 'block';
+
+  try {
+    // 1. Create/Update current project via API
+    // If currentProject is 'default', we need to create a new one first or update default
+    const res = await api('save_plan', {
+      title: title,
+      address: address,
+      start_date: startDate,
+      exchange_rate: (currency === 'eur' ? 1.0 : 117.2)
+    });
+
+    if (onboardSelection !== 'blank') {
+      // 2. Apply template
+      // function applyTemplate(type, includeWorkers, includeMaterials, matLang)
+      await applyTemplate(onboardSelection, includeCosts, includeCosts, 'sr');
+    }
+
+    // 3. Mark onboarding as done
+    localStorage.setItem('planner_onboard_done_' + currentProject, '1');
+    
+    // 4. Hide overlay and reload
+    const overlay = document.getElementById('onboardOverlay');
+    if (overlay) overlay.classList.remove('active');
+    
+    window.location.reload(); 
+  } catch (e) {
+    console.error('Onboarding failed', e);
+    if (goBtn) goBtn.disabled = false;
+    if (goText) goText.style.display = 'inline-block';
+    if (goSpinner) goSpinner.style.display = 'none';
+    if (typeof toast === 'function') toast('Greška pri kreiranju projekta.', 'err');
+  }
+}

@@ -2,7 +2,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <style>body { visibility: hidden; }</style>
+  <style>
+    body { visibility: hidden; background: #030305; margin:0; padding:0; overflow:hidden; }
+    /* Premium Background Orbs & Grid - Inline for instant load */
+    .grid-overlay {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+      background-size: 80px 80px;
+      visibility: visible !important;
+    }
+    .orb {
+      position: fixed; border-radius: 50%; filter: blur(140px);
+      pointer-events: none; opacity: 0.25; z-index: 0;
+      animation: orbDrift 20s ease-in-out infinite alternate;
+      visibility: visible !important;
+    }
+    .orb-1 {
+      width: 750px; height: 750px;
+      background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+      top: -200px; right: -100px;
+    }
+    .orb-2 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, #ec4899 0%, transparent 70%);
+      bottom: -150px; left: -100px;
+      animation-delay: -10s;
+    }
+    @keyframes orbDrift {
+      0% { transform: translate(0, 0) scale(1.1); }
+      100% { transform: translate(80px, 60px) scale(1); }
+    }
+    /* Luxury Light Theme Overrides (Inspired by features2.html) */
+    body[data-theme="light"] { background: #fcfaf8; }
+    body[data-theme="light"] .grid-overlay {
+      background-image: linear-gradient(rgba(146,64,14,0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(146,64,14,0.03) 1px, transparent 1px);
+    }
+    body[data-theme="light"] .orb-1 { background: radial-gradient(circle, #92400e 0%, transparent 70%); opacity:0.18; }
+    body[data-theme="light"] .orb-2 { background: radial-gradient(circle, #334155 0%, transparent 70%); opacity:0.18; }
+    body[data-theme="light"] .bl-orb-1 { background: radial-gradient(circle, #92400e 0%, transparent 70%); opacity:0.12; }
+    body[data-theme="light"] .bl-orb-2 { background: radial-gradient(circle, #334155 0%, transparent 70%); opacity:0.12; }
+  </style>
+  <script>
+    // Fail-safe: Reveal body after 3s even if JS fails
+    setTimeout(() => { if(document.body.style.visibility !== 'visible') document.body.style.visibility = 'visible'; }, 3000);
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RENOVATIONSTEPS.COM — Dashboard</title>
@@ -19,18 +64,19 @@
   <meta name="description" content="Manage your renovation projects with RenovationSteps. Track tasks, materials, payments, and more.">
   <meta property="og:title" content="RENOVATIONSTEPS.COM — Dashboard">
   <meta property="og:description" content="Manage your renovation projects with RenovationSteps. Track tasks, materials, payments, and more.">
-  <meta property="og:image" content="android-chrome-512x512.png">
-  <meta property="og:url" content="https://renovationsteps.com/planner.html">
+  <meta property="og:image" content="https://renovationsteps.com/android-chrome-512x512.png">
+  <meta property="og:url" content="https://renovationsteps.com/index.html">
   <meta property="og:type" content="website">
-  <link rel="canonical" href="https://renovationsteps.com/planner.html">
+  <link rel="canonical" href="https://renovationsteps.com/index.html">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="planner.css?v=9">
-  <link rel="stylesheet" id="v2css" href="planner2.css?v=3">
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js" integrity="sha384-5JIwZN3kuxX2zKsavvNmbZ3zhZZMUtu/eQiK3BbXukpSXp0Cd2ZP4OAYKx7mrPgI" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="planner.css?v=10">
+  <link rel="stylesheet" id="v2css" href="planner2.css?v=4">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&amp;family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,600;0,800;1,300&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet">
+  <script src="js/chart.min.js" defer></script>
+  <script src="js/fullcalendar.min.js" defer></script>
+  <script src="js/lucide.min.js" defer></script>
   <style>
   #calendar { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 0.75rem; padding: 1rem; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
   .fc-event { cursor: pointer; }
@@ -102,10 +148,6 @@
     background: rgba(255, 255, 255, 0.1) !important;
   }
   
-  /* Force rounded corners for login button and cards */
-  #loginOverlay .heroSecondary, #loginOverlay .heroSecondary::before {
-    border-radius: 12px !important;
-  }
 
   .bl-onboard-overlay {
     background: rgba(0, 0, 0, 0.92) !important;
@@ -147,70 +189,207 @@
   .bl-user-menu-item { width: 100%; text-align: left; background: none; border: none; padding: 0.5rem 0.75rem; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; border-radius: 6px; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
   .bl-user-menu-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
   .bl-menu-section-title { font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0.75rem 0.25rem; }
+
+  /* --- Premium Search (Command Palette) --- */
+  .search-palette-overlay {
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+    animation: fadeIn 0.2s ease-out;
+  }
+  .search-palette-card {
+    width: 100%;
+    max-width: 680px;
+    background: linear-gradient(135deg, rgba(20, 20, 25, 0.95), rgba(10, 10, 15, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), 0 0 100px rgba(99, 102, 241, 0.05);
+    overflow: hidden;
+    position: relative;
+    transform: scale(0.98);
+    animation: slideScaleIn 0.2s ease-out forwards;
+  }
+  @keyframes slideScaleIn {
+    to { transform: scale(1); }
+  }
+  .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 1.25rem;
+  }
+  .search-input-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: inherit;
+  }
+  .search-input-field::placeholder { color: rgba(255, 255, 255, 0.25); }
+  
+  .search-results-area {
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 1rem;
+    background: rgba(0,0,0,0.1);
+  }
+  .search-results-area::-webkit-scrollbar { width: 4px; }
+  .search-results-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+  
+  .search-group-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent-main);
+    padding: 0.75rem 1rem 0.5rem;
+    opacity: 0.8;
+  }
+  .search-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+  }
+  .search-item:hover, .search-item.selected {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.05);
+    transform: translateX(4px);
+  }
+  .search-item.selected {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+  .search-item-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.03);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .search-item:hover .search-item-icon, .search-item.selected .search-item-icon {
+    background: var(--accent-main);
+    color: #000;
+  }
+  .search-item-content { flex: 1; min-width: 0; }
+  .search-item-title { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; margin-bottom: 0.15rem; }
+  .search-item-subtitle { font-size: 0.75rem; color: var(--text-secondary); opacity: 0.5; }
+  
+  .search-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: rgba(255,255,255,0.015);
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .search-hints { display: flex; gap: 1.5rem; }
+  .search-hint { display: flex; align-items: center; gap: 0.5rem; font-size: 0.65rem; color: var(--text-secondary); opacity: 0.5; font-weight: 600; }
+  .search-kbd {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    font-family: inherit;
+    font-size: 0.6rem;
+    color: var(--text-primary);
+  }
+
+  /* Command Palette Light Theme Overrides */
+  body[data-theme="light"] .search-palette-overlay {
+    background: rgba(240, 240, 245, 0.4) !important;
+  }
+  body[data-theme="light"] .search-palette-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(249, 250, 251, 0.98));
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.1), 0 0 100px rgba(0, 0, 0, 0.05);
+  }
+  body[data-theme="light"] .search-input-field {
+    color: #111827;
+  }
+  body[data-theme="light"] .search-input-field::placeholder {
+    color: #9ca3af;
+  }
+  body[data-theme="light"] .search-item-title {
+    color: #111827;
+  }
+  body[data-theme="light"] .search-item-subtitle {
+    color: #6b7280;
+  }
+  body[data-theme="light"] .search-item:hover, body[data-theme="light"] .search-item.selected {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.05);
+  }
+  body[data-theme="light"] .search-item.selected {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.2);
+  }
+  body[data-theme="light"] .search-kbd {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #374151;
+  }
+  body[data-theme="light"] .search-footer {
+    border-top-color: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.02);
+  }
+  body[data-theme="light"] .search-item-icon {
+    background: rgba(0, 0, 0, 0.03);
+    color: #6b7280;
+  }
+
+  #taskDetailsModal .bl-modal-content {
+    animation: modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes modalSlideUp {
+    from { opacity: 0; transform: translate3d(0, 40px, 0) scale(0.98); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  }
   </style>
 </head>
 
 <body class="blanner-body">
+  <!-- Grid overlay -->
+  <div class="grid-overlay"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  
 <div class="bl-app-shell" style="display: flex; height: 100vh; width: 100vw; overflow: hidden; position: relative;">
-  <aside class="bl-sidebar" id="blSidebar" style="background:var(--body-bg); border-right:1px solid var(--mist); display:flex; flex-direction:column; transition:width 0.3s ease; position:relative; overflow:visible; z-index:100; height:100vh; width: 200px; flex-shrink: 0;">
+  <aside class="bl-sidebar" id="blSidebar" style="border-right:1px solid var(--mist); display:flex; flex-direction:column; transition:width 0.3s ease; position:relative; overflow:visible; z-index:100; height:100vh; width: 200px; flex-shrink: 0; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); background: transparent;">
   <header class="bl-sidebar-header" style="display:flex; flex-direction:column; gap:0.75rem; padding:1.25rem 1rem 0.75rem; border-bottom:1px solid var(--mist); flex-shrink:0; overflow:visible;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;" class="group">
-            <svg width="24" height="24" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="transition-transform group-hover:scale-110" style="color:var(--text-primary);">
+    <div style="display: flex; justify-content: center; align-items: center; padding: 0.5rem 0;">
+        <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: center;" class="group">
+            <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="transition-transform group-hover:scale-110" style="color:var(--text-primary);">
                 <rect x="5" y="5" width="90" height="90" rx="20" fill="none" stroke="currentColor" stroke-width="8"/>
                 <rect x="25" y="30" width="15" height="10" rx="2" fill="currentColor"/>
                 <rect x="42" y="45" width="22" height="10" rx="2" fill="currentColor"/>
                 <rect x="62" y="60" width="13" height="10" rx="2" fill="currentColor"/>
             </svg>
-            <span style="font-size: 0.95rem; color: var(--text-primary); font-weight: 700; letter-spacing: -0.02em;">Planner</span>
         </a>
       <div style="display:flex; align-items:center; gap:0.5rem;">
         <button class="bl-sidebar-close" id="blSidebarClose" aria-label="Close menu" style="display:none; background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:4px;">✕</button>
       </div>
     </div>
     
-    <div style="position: absolute; top: 0; bottom: 0; right: 4px; width: 4px; display: flex; flex-direction: column; gap: 2px; justify-content: center;">
-      <div style="width: 1px; flex: 1; background: var(--mist); opacity: 0.3;"></div>
-      <div style="width: 1px; flex: 1; background: var(--mist); opacity: 0.3;"></div>
-    </div>
     
-    <div style="position: relative;">
-      <div id="blUserBtn" onclick="toggleUserMenu(event)" style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer; padding: 0.3rem; border-radius: 8px; transition: background 0.2s;">
-        <div id="blUserAvatar" style="width: 28px; height: 28px; border-radius: 50%; background: var(--frost); border: 1px solid var(--mist); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--text-primary);">·</div>
-        <span id="blUserName" style="font-size: 0.85rem; color: var(--text-primary); font-weight: 600;">·</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.3;"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div id="blUserMenu" style="display: none; position: absolute; top: 100%; left: 0; width: 220px; z-index: 1000; background: #1B1B1E; border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 0.6rem; margin-top: 0.5rem; backdrop-filter: blur(20px);">
-        <div class="bl-menu-section-title">Language</div>
-        <div style="display: flex; gap: 0.25rem; padding: 0 0.25rem 0.5rem;">
-          <button onclick="setLang('en'); toggleUserMenu(event)" class="bl-user-menu-item" style="flex:1; justify-content: center; padding: 0.4rem; font-size: 0.65rem;">🇬🇧 EN</button>
-          <button onclick="setLang('sr'); toggleUserMenu(event)" class="bl-user-menu-item" style="flex:1; justify-content: center; padding: 0.4rem; font-size: 0.65rem;">🇷🇸 SR</button>
-          <button onclick="setLang('ru'); toggleUserMenu(event)" class="bl-user-menu-item" style="flex:1; justify-content: center; padding: 0.4rem; font-size: 0.65rem;">🇷🇺 RU</button>
-          <button onclick="setLang('zh'); toggleUserMenu(event)" class="bl-user-menu-item" style="flex:1; justify-content: center; padding: 0.4rem; font-size: 0.65rem;">🇨🇳 ZH</button>
-        </div>
-
-        <div class="bl-menu-section-title">Currency</div>
-        <div style="padding: 0 0.25rem 0.5rem;">
-          <select id="blCurSelectMenu" onchange="setCur(this.value)" style="width: 100%; background: var(--card-bg); border: 1px solid var(--mist); border-radius: 6px; color: var(--text-primary); font-size: 0.75rem; padding: 0.4rem;">
-            <option value="rsd">RSD (Serbian Dinar)</option>
-            <option value="eur">EUR (Euro)</option>
-            <option value="usd">USD (US Dollar)</option>
-            <option value="rub">RUB (Russian Ruble)</option>
-            <option value="cny">CNY (Chinese Yuan)</option>
-          </select>
-        </div>
-        <div style="height: 1px; background: var(--mist); margin: 0.3rem 0.5rem;"></div>
-        <button onclick="switchTab('settings'); toggleUserMenu(event)" class="bl-user-menu-item">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span data-i18n="nav_settings">Settings</span>
-        </button>
-
-        <button onclick="attemptLogout()" class="bl-user-menu-item" style="color: #ff3b30;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          <span data-i18n="btn_logout">Logout</span>
-        </button>
-      </div>
-    </div>
+    <!-- Profile button moved to footer -->
   </header>
 
   <nav class="bl-nav" id="blNav" style="padding: 0 0.5rem;">
@@ -227,14 +406,16 @@
       <svg class="bl-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       <span data-i18n="nav_tasks">Tasks</span>
     </a>
+    <a href="#" class="bl-nav-item" data-tab="gantt" id="nav-gantt">
+      <svg class="bl-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h10"/><path d="M6 12h9"/><path d="M11 18h7"/></svg>
+      <span data-i18n="nav_gantt">Gantt</span>
+    </a>
     <a href="#" class="bl-nav-item" data-tab="calendar" id="nav-calendar">
       <svg class="bl-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span data-i18n="nav_calendar">Calendar</span>
     </a>
-    <a href="#" class="bl-nav-item" data-tab="gantt" id="nav-gantt">
-      <svg class="bl-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="7" y1="8" x2="21" y2="8"/><line x1="7" y1="12" x2="15" y2="12"/><line x1="7" y1="16" x2="11" y2="16"/></svg>
-      <span data-i18n="nav_gantt">Gantt</span>
-    </a>
+    <!-- Secondary one at the bottom is kept -->
+
     <a href="#" class="bl-nav-item" data-tab="map" id="nav-map">
       <svg class="bl-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="13"/><line x1="12" y1="13" x2="5" y2="17"/><line x1="12" y1="13" x2="19" y2="17"/></svg>
       <span data-i18n="nav_map">Map</span>
@@ -265,15 +446,54 @@
     </a>
   </nav>
   
-  <div class="bl-sidebar-footer" style="margin-top: auto; padding: 0.5rem 0.75rem; border-top: 1px solid var(--mist); display: flex; justify-content: space-between; align-items: center;">
-    <button id="blSidebarCollapseBtn" onclick="toggleSidebarCollapse()" title="Collapse sidebar" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; padding: 6px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;">
-      <svg id="sidebarArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s ease;"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <div class="bl-theme-chip-wrap" id="themeChipWrap" style="margin-bottom: 10px;">
-      <button class="bl-theme-chip" id="themeChipBtn" onclick="toggleThemeMenu(event)">
-        <span class="bl-theme-chip-dot" id="themeChipDot"></span>
-        <span id="themeChipLabel">Theme</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+  <div class="bl-sidebar-footer" style="margin-top: auto; padding: 0.75rem 0.85rem; border-top: 1px solid var(--mist); display: flex; flex-direction: column; gap: 0.75rem;">
+    <!-- Client/User Profile Button -->
+    <div style="position: relative;">
+      <div id="blUserBtn" onclick="toggleUserMenu(event)" style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer; padding: 0.5rem 0.65rem; border-radius: 12px; transition: all 0.2s; background: rgba(255,255,255,0.03); border: 1px solid var(--mist);">
+        <div id="blUserAvatar" style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-main); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);">·</div>
+        <span id="blUserName" style="font-size: 0.8rem; color: var(--text-primary); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">·</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.4; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <!-- Dropdown opens UPWARDS -->
+      <div id="blUserMenu" style="display: none; position: absolute; bottom: 100%; left: 0; width: 220px; z-index: 1000; background: #1B1B1E; border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); padding: 0.6rem; margin-bottom: 0.6rem; backdrop-filter: blur(20px);">
+        <div class="bl-menu-section-title">Language</div>
+        <div style="display: flex; gap: 0.25rem; padding: 0 0.25rem 0.5rem;">
+          <button onclick="setLang('en'); toggleUserMenu(event)" class="bl-user-menu-item" style="flex:1; justify-content: center; padding: 0.4rem; font-size: 0.65rem;">🇬🇧 EN</button>
+          <button onclick="setLang('ru'); toggleUserMenu(event)" class="bl-user-menu-item" style="flex:1; justify-content: center; padding: 0.4rem; font-size: 0.65rem;">🇷🇺 RU</button>
+          <button onclick="setLang('zh'); toggleUserMenu(event)" class="bl-user-menu-item" style="flex:1; justify-content: center; padding: 0.4rem; font-size: 0.65rem;">🇨🇳 ZH</button>
+          <button onclick="setLang('sr'); toggleUserMenu(event)" class="bl-user-menu-item" style="flex:1; justify-content: center; padding: 0.4rem; font-size: 0.65rem;">🇷🇸 SR</button>
+        </div>
+        <div class="bl-menu-section-title">Currency</div>
+        <div style="padding: 0 0.25rem 0.5rem;">
+          <select id="blCurSelectMenu" onchange="setCur(this.value)" style="width: 100%; background: var(--card-bg); border: 1px solid var(--mist); border-radius: 6px; color: var(--text-primary); font-size: 0.75rem; padding: 0.4rem;">
+            <option value="rsd">RSD (Serbian Dinar)</option>
+            <option value="eur">EUR (Euro)</option>
+            <option value="usd">USD (US Dollar)</option>
+            <option value="rub">RUB (Russian Ruble)</option>
+            <option value="cny">CNY (Chinese Yuan)</option>
+          </select>
+        </div>
+        <div style="height: 1px; background: var(--mist); margin: 0.3rem 0.5rem;"></div>
+        <button onclick="switchTab('settings'); toggleUserMenu(event)" class="bl-user-menu-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span data-i18n="nav_settings">Settings</span>
+        </button>
+        <button onclick="attemptLogout()" class="bl-user-menu-item" style="color: #ff3b30;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span data-i18n="btn_logout">Logout</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Switches Cluster -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <button id="blSidebarCollapseBtn" onclick="toggleSidebarCollapse()" title="Collapse sidebar" style="background: rgba(255,255,255,0.05); border: 1px solid var(--mist); color: var(--text-secondary); cursor: pointer; padding: 6px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+        <svg id="sidebarArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s ease;"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light/Dark Mode" style="background: rgba(255,255,255,0.05); border: 1px solid var(--mist); color: var(--text-secondary); cursor: pointer; padding: 6px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+        <svg id="themeToggleIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
       </button>
     </div>
   </div>
@@ -326,178 +546,203 @@
   </a>
 </nav>
 
-<div class="bl-main" id="blMain" style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 10;">
-  <button id="blMenuToggle" aria-label="Open menu" onclick="toggleMobileSidebar()">
-    <span></span><span></span><span></span>
+<div class="bl-main" id="blMain" style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; overflow-x: clip; position: relative; z-index: 10;">
+  <button id="blMenuToggle" aria-label="Open menu" onclick="toggleMobileSidebar()" style="position: fixed; top: 1.5rem; left: 1.5rem; z-index: 1000; background: var(--card-bg); border: 1px solid var(--mist); border-radius: 10px; width: 44px; height: 44px; align-items: center; justify-content: center; color: var(--text-primary); cursor: pointer; box-shadow: var(--card-shadow);">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
+
   <div id="blSidebarOverlay" onclick="closeMobileSidebar()"></div>
 
-  <div style="display:none;"></div>
-
-  <main class="bl-content" id="blContent" style="flex: 1; width: 100%; min-width: 0;">
+  <main class="bl-content" id="blContent" style="flex: 1; min-width: 0;">
 
     <div class="bl-tab active" id="tab-overview">
-
-      <div class="bl-ov-card" style="border-radius: 20px; padding: 1.5rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--mist);">
-        <div style="position: relative; z-index: 1;">
-          <div style="display:flex; align-items:center; gap:0.75rem;">
-            <h2 class="bl-page-title" id="ovHeroTitle">Renovation Center</h2>
-            <button id="btnSwitchProj" onclick="openModal('projectListModal')" style="display:none; padding:4px 10px; font-size:0.65rem; border-radius:100px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2); color:#818cf8; font-weight:700; cursor:pointer; text-transform:uppercase; letter-spacing:0.04em;">
-              Switch
+      <!-- Editorial Hero Overview -->
+      <div class="ov-editorial-header" style="display: flex; min-height: 400px; border: 1px solid var(--mist); border-radius: 24px; overflow: hidden; margin-bottom: 2rem; background: var(--card-bg); position: relative;">
+        <!-- Noise & Grid inside the card for extra depth -->
+        <div style="position:absolute; inset:0; background-image: url('data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E'); opacity: 0.03; pointer-events: none;"></div>
+        
+        <div class="ov-hero-left" style="flex: 1; padding: 4rem 3rem; display: flex; flex-direction: column; justify-content: flex-end; border-right: 1px solid var(--mist); position: relative;">
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent-main); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 32px; height: 1px; background: var(--accent-main);"></div>
+            Operating Intelligence
+          </div>
+          <h1 id="ovHeroTitle" style="font-family: 'Oswald', sans-serif; font-size: clamp(3rem, 6vw, 6rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.05em; text-transform: uppercase; color: #000; margin: 0;">
+            Project<br>
+            <span style="display: inline-block; padding-bottom: 0.1em; font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: #000;">Intelligence</span>
+          </h1>
+          <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
+            <p id="ovHeroDesc" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; color: var(--text-secondary); max-width: 400px; margin: 0; opacity: 0.8;">Strategic dossier and real-time operational oversight.</p>
+            <button id="btnSwitchProj" onclick="openModal('projectListModal')" style="display:none; padding: 0.5rem 1rem; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; border-radius: 9999px; background: rgba(255,255,255,0.05); border: 1px solid var(--mist); color: var(--text-primary); cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.2s;">
+              Switch Domain
             </button>
           </div>
-          <p id="ovHeroDesc" style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;"></p>
-          <div id="planDates" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.15rem; font-family:'JetBrains Mono',monospace;"></div>
         </div>
-        <div style="position: relative; z-index: 1; text-align: right; background: rgba(255,255,255,0.04); padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid var(--mist); backdrop-filter: blur(10px);">
-          <div style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.35rem; font-weight: 600;" data-i18n="stat_total_budget">Total Budget</div>
-          <div class="bl-ov-kpi-value" id="statHeroBudget" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">—</div>
+
+        <div class="ov-hero-right" style="width: min(380px, 40vw); min-width: 200px; padding: 4rem 3rem; display: flex; flex-direction: column; justify-content: flex-end; gap: 2.5rem; background: rgba(255,255,255,0.01);">
+          <div style="border-top: 1px solid var(--mist); padding-top: 1.5rem;">
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-secondary); margin-bottom: 0.5rem;" data-i18n="stat_total_budget">Financial Allocation</div>
+            <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+              <div id="statHeroBudget" style="font-family: 'Oswald', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em;">—</div>
+              <!-- Legacy ID for JS -->
+              <span id="statBudget" style="display:none;"></span>
+            </div>
+            <div id="statSpent" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;"></div>
+          </div>
+          <div style="border-top: 1px solid var(--mist); padding-top: 1.5rem;">
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-secondary); margin-bottom: 0.5rem;">Temporal Range</div>
+            <div id="planDates" style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text-secondary);"></div>
+          </div>
+          <div style="border-top: 1px solid var(--mist); padding-top: 1.5rem;">
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-secondary); margin-bottom: 0.5rem;">Project Status</div>
+            <div id="ovHealthVal" style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--accent-main); text-transform: uppercase;">—</div>
+          </div>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-        <div class="bl-ov-kpi" style="border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; background: var(--card-bg); border: 1px solid var(--mist); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <span style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600;">Phases</span>
-            <div style="width: 28px; height: 28px; border-radius: 8px; background: var(--mist); display: flex; align-items: center; justify-content: center; color: var(--text-primary);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-            </div>
-          </div>
-          <div class="bl-ov-kpi-value" id="statPhases" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">—</div>
-          <div class="bl-ov-kpi-sub" id="statPhasesActive" style="border-top: 1px solid var(--mist); padding-top: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem;"></div>
+      <!-- KPI Grid - Refined Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="ov-kpi-minimal" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 20px; padding: 2rem; position: relative; overflow: hidden;">
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 1.5rem;">Structural Phases</div>
+          <div id="statPhases" style="font-family: 'Oswald', sans-serif; font-size: 4rem; font-weight: 700; color: var(--text-primary); line-height: 1;">—</div>
+          <div id="statPhasesActive" style="margin-top: 1rem; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; color: var(--text-secondary);"></div>
+          <div style="position: absolute; right: -1rem; bottom: -1rem; font-family: 'Oswald', sans-serif; font-size: 8rem; font-weight: 800; color: rgba(255,255,255,0.02); line-height: 1;">01</div>
         </div>
-        
-        <div class="bl-ov-kpi" style="border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; background: var(--card-bg); border: 1px solid var(--mist); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <span style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600;">Tasks</span>
-            <div style="width: 28px; height: 28px; border-radius: 8px; background: var(--mist); display: flex; align-items: center; justify-content: center; color: var(--text-primary);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            </div>
-          </div>
-          <div class="bl-ov-kpi-value" id="statTasks" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">—</div>
-          <div class="bl-ov-kpi-sub" id="statTasksDone" style="border-top: 1px solid var(--mist); padding-top: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem;"></div>
+
+        <div class="ov-kpi-minimal" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 20px; padding: 2rem; position: relative; overflow: hidden;">
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 1.5rem;">Operational Tasks</div>
+          <div id="statTasks" style="font-family: 'Oswald', sans-serif; font-size: 4rem; font-weight: 700; color: var(--text-primary); line-height: 1;">—</div>
+          <div id="statTasksDone" style="margin-top: 1rem; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; color: var(--text-secondary);"></div>
+          <div style="position: absolute; right: -1rem; bottom: -1rem; font-family: 'Oswald', sans-serif; font-size: 8rem; font-weight: 800; color: rgba(255,255,255,0.02); line-height: 1;">02</div>
         </div>
-        
-        <div class="bl-ov-kpi" style="border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; background: var(--card-bg); border: 1px solid var(--mist); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <span style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600;">Workers</span>
-            <div style="width: 28px; height: 28px; border-radius: 8px; background: var(--mist); display: flex; align-items: center; justify-content: center; color: var(--text-primary);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-          </div>
-          <div class="bl-ov-kpi-value" id="statWorkers" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">—</div>
-          <div class="bl-ov-kpi-sub" data-i18n="stat_in_contacts" style="border-top: 1px solid var(--mist); padding-top: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem;">In contacts</div>
-        </div>
-        
-        <div class="bl-ov-kpi bl-ov-kpi-health" style="border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; background: var(--card-bg); border: 1px solid var(--mist); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <span style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600;">Status</span>
-            <div style="width: 28px; height: 28px; border-radius: 8px; background: var(--mist); display: flex; align-items: center; justify-content: center; color: var(--text-primary);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            </div>
-          </div>
-          <div class="bl-ov-kpi-value" id="ovHealthVal" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">—</div>
-          <div class="bl-ov-kpi-sub" id="ovDates" style="border-top: 1px solid var(--mist); padding-top: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem;"></div>
+
+        <div class="ov-kpi-minimal" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 20px; padding: 2rem; position: relative; overflow: hidden;">
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 1.5rem;">Resource Units</div>
+          <div id="statWorkers" style="font-family: 'Oswald', sans-serif; font-size: 4rem; font-weight: 700; color: var(--text-primary); line-height: 1;">—</div>
+          <div data-i18n="stat_in_contacts" style="margin-top: 1rem; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; color: var(--text-secondary);">Active Operators</div>
+          <div style="position: absolute; right: -1rem; bottom: -1rem; font-family: 'Oswald', sans-serif; font-size: 8rem; font-weight: 800; color: rgba(255,255,255,0.02); line-height: 1;">03</div>
         </div>
       </div>
 
-      <div class="bl-ov-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-
-        <div class="bl-ov-card" style="border-radius: 16px; overflow: hidden; background: var(--card-bg); border: 1px solid var(--mist);">
-          <div class="bl-ov-card-head" style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--mist);">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div style="width: 32px; height: 32px; border-radius: 10px; background: var(--mist); display: flex; align-items: center; justify-content: center; color: var(--text-primary);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <span class="bl-ov-card-title" data-i18n="upcoming_title" style="font-size: 0.9rem; font-weight: 600;">Upcoming Deadlines</span>
-            </div>
-            <span class="bl-ov-count-badge" id="ovUpcomingCount" style="background: var(--mist); color: var(--text-secondary); font-weight: 700; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.75rem;"></span>
+      <!-- Detail Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+        <div class="ov-section-panel" style="background: rgba(255,255,255,0.01); border: 1px solid var(--mist); border-radius: 24px; padding: 2.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2.5rem;">
+            <h3 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); margin: 0;">Upcoming <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main);">Milestones</span></h3>
+            <span id="ovUpcomingCount" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent-main); font-weight: 700;"></span>
           </div>
-          <div class="bl-ov-card-body" id="ovUpcoming" style="padding: 0.75rem 1.25rem; max-height: 280px; overflow-y: auto;">
+          <div id="ovUpcoming" style="max-height: 400px; overflow-y: auto;">
             <div class="bl-ov-empty" data-i18n="no_upcoming_events">No events in the next 60 days</div>
           </div>
         </div>
 
-        <div class="bl-ov-card" style="border-radius: 16px; overflow: hidden; background: var(--card-bg); border: 1px solid var(--mist);">
-          <div class="bl-ov-card-head" style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--mist);">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div style="width: 32px; height: 32px; border-radius: 10px; background: var(--mist); display: flex; align-items: center; justify-content: center; color: var(--text-primary);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              </div>
-              <span class="bl-ov-card-title" data-i18n="renovation_phases" style="font-size: 0.9rem; font-weight: 600;">Phase Progress</span>
-            </div>
-            <button class="bl-ov-link-btn" onclick="switchTab('phases')" data-i18n="all_phases" style="font-weight: 600; font-size: 0.7rem; background: var(--mist); color: var(--text-secondary); padding: 0.35rem 0.75rem; border-radius: 8px;">All phases &rarr;</button>
+        <div class="ov-section-panel" style="background: rgba(255,255,255,0.01); border: 1px solid var(--mist); border-radius: 24px; padding: 2.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2.5rem;">
+            <h3 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); margin: 0;">Operational <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main);">Progress</span></h3>
+            <button onclick="switchTab('phases')" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); background: none; border: none; cursor: pointer; letter-spacing: 0.1em;">Archive &rarr;</button>
           </div>
-          <div class="bl-ov-card-body" id="ovProgress" style="padding: 0.75rem 1.25rem; max-height: 280px; overflow-y: auto;">
+          <div id="ovProgress" style="max-height: 400px; overflow-y: auto;">
             <div class="bl-ov-empty" data-i18n="no_phases_yet">No phases yet. Add them in the "Phases" section.</div>
           </div>
         </div>
+      </div>
 
+      <!-- Hidden elements to satisfy legacy JS selectors -->
+      <div style="display:none;">
+        <span id="planTitle"></span>
+        <span id="planAddress"></span>
+        <span id="ovBudgetTotal"></span>
+        <span id="ovBudgetPct"></span>
+        <div id="ovDonutCenter"></div>
+        <div id="budgetBar"></div>
+        <div id="budgetBarLeft"></div>
+        <div id="budgetBarRight"></div>
+        <canvas id="budgetChart"></canvas>
+      </div>
+
+      <!-- Safety IDs for secondary features -->
+      <div style="display:none;">
+        <button id="addLogBtn"></button>
+        <button id="addPunchBtn"></button>
+        <button id="addChangeBtn"></button>
+        <button id="syncTemplateBtnLegacy"></button>
       </div>
     </div>
 
     <div class="bl-tab" id="tab-phases">
-      <div class="bl-page-header">
-        <div>
-          <div class="bl-page-label" data-i18n="label_planning">Planning</div>
-          <h2 class="bl-page-title" data-i18n="renovation_phases">Renovation Phases</h2>
+      <div class="editorial-page-header" style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--mist); padding-bottom: 2rem;">
+        <div style="display: flex; align-items: flex-end; gap: 2rem; flex-wrap: wrap;">
+          <div>
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.25em; color: var(--accent-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+              <div style="width: 24px; height: 1px; background: var(--accent-main);"></div>
+              Structural Architecture
+            </div>
+            <h2 style="font-family: 'Oswald', sans-serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--text-primary); margin: 0; letter-spacing: -0.02em;">
+              Project <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main);">Phases</span>
+            </h2>
+          </div>
+          <div style="padding-bottom: 0.5rem; border-left: 1px solid var(--mist); padding-left: 2.5rem;">
+             <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 0.25rem;">Total Budget</div>
+             <div id="phGlobalBudget" style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.01em;">—</div>
+             <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 0.25rem;">Total Spent</div>
+             <div id="phGlobalSpent" style="font-family: 'Oswald', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--accent-main); letter-spacing: -0.01em;">—</div>
+          </div>
         </div>
-        <div style="display:flex;gap:0.5rem;">
-          <button class="bl-btn bl-btn-primary" id="addPhaseBtn"><span data-i18n="add_phase">+ Add Phase</span></button>
-        </div>
+        <button id="addPhaseBtn" class="bl-btn bl-btn-primary" onclick="openAddPhaseModal()" style="padding: 0.75rem 2rem; border-radius: 12px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.1em;">+ Add New Phase</button>
       </div>
 
       <div id="phasesList"></div>
     </div>
 
     <div class="bl-tab" id="tab-finances">
-      <div class="bl-page-header" style="padding: 1.5rem 0; margin-bottom: 0.5rem; border-bottom: 1px solid var(--mist);">
-        <div>
-          <div class="bl-page-label" data-i18n="label_finances">Finances</div>
-          <h2 class="bl-page-title" data-i18n="nav_finances">Finances</h2>
+      <div class="bl-finance-header">
+        <div class="bl-header-content">
+          <div class="bl-section-label">
+            <span class="bl-line"></span>
+            <span data-i18n="fin_sec_label">CAPITAL FLOW ANALYSIS</span>
+          </div>
+          <h2 class="bl-display-title">
+            Financial <span class="bl-italic-accent">Ledger</span>
+          </h2>
         </div>
-        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-          <button class="bl-btn" id="addPaymentBtn" style="padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 600; border-radius: 10px; background:transparent; border:1px solid var(--mist); color:var(--text-secondary);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            <span data-i18n="add_payment">Add Payment</span>
-          </button>
-          <button class="bl-btn bl-btn-primary" id="addExpenseBtn" onclick="openModal('expenseModal')" style="padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span data-i18n="add_expense">Add Expense</span>
-          </button>
+        <div class="bl-header-actions">
+          <button id="addPaymentBtn" class="bl-btn bl-btn-secondary" onclick="openAddPaymentModal()" data-i18n="add_payment">Add Payment</button>
+          <button id="addExpenseBtn" class="bl-btn bl-btn-primary" onclick="openAddExpenseModal()" data-i18n="add_expense">Add Expense</button>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-        <div class="bl-ov-kpi" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1.5rem; text-align: center; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--accent-main)'" onmouseout="this.style.borderColor='var(--mist)'">
-          <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;" data-i18n="lbl_budget">Project Budget</div>
-          <div class="bl-ov-kpi-value" id="finBudget" style="font-size: 1.75rem; font-weight: 700;">0 RSD</div>
+      <div class="bl-finance-kpi-grid">
+        <div class="bl-kpi-card fin-budget">
+          <label data-i18n="fin_total_budgeted">Total Budgeted</label>
+          <div id="finBudget" class="bl-kpi-value">0 RSD</div>
+          <div class="bl-kpi-sub" data-i18n="fin_project_allocation">Project-wide allocation</div>
         </div>
-        <div class="bl-ov-kpi" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1.5rem; text-align: center; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--accent-main)'" onmouseout="this.style.borderColor='var(--mist)'">
-          <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;" data-i18n="lbl_total_costs">Total Spent</div>
-          <div class="bl-ov-kpi-value" id="finTotal" style="font-size: 1.75rem; font-weight: 700;">0 RSD</div>
+        <div class="bl-kpi-card fin-expenditure">
+          <label data-i18n="fin_current_expenditure">Current Expenditure</label>
+          <div id="finTotal" class="bl-kpi-value">0 RSD</div>
+          <div class="bl-kpi-sub" data-i18n="fin_net_flow">Real-time net outflow</div>
         </div>
-        <div class="bl-ov-kpi" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1.5rem; text-align: center; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--accent-main)'" onmouseout="this.style.borderColor='var(--mist)'">
-          <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;" data-i18n="lbl_avans">Total Advance</div>
-          <div class="bl-ov-kpi-value" id="finAdvance" style="font-size: 1.75rem; font-weight: 700;">0 RSD</div>
+        <div class="bl-kpi-card fin-advance">
+          <label data-i18n="fin_advance_payments">Advance Payments</label>
+          <div id="finAdvance" class="bl-kpi-value">0 RSD</div>
+          <div class="bl-kpi-sub" data-i18n="fin_committed_capital">Committed capital assets</div>
         </div>
       </div>
 
       <!-- Financial Table -->
-      <div class="bl-card" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; overflow: hidden;">
-        <div class="bl-card-body" style="padding: 0;">
-          <table class="bl-table" style="width: 100%; border-collapse: collapse;">
+      <div class="bl-finance-table-wrap">
+        <div class="bl-table-container">
+          <table class="bl-modern-table">
             <thead>
-              <tr style="border-bottom: 1px solid var(--mist); font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">
-                <th style="padding: 1rem; text-align: left;" data-i18n="th_date">Date</th>
-                <th style="padding: 1rem; text-align: left;" data-i18n="lbl_recipient">Recipient</th>
-                <th style="padding: 1rem; text-align: left;" data-i18n="th_description">Description</th>
-                <th style="padding: 1rem; text-align: right;" data-i18n="th_amount">Amount</th>
-                <th style="padding: 1rem; text-align: center;" data-i18n="lbl_avans">Advance</th>
-                <th style="padding: 1rem; text-align: center;"></th>
+              <tr>
+                <th style="width: 120px;" data-i18n="th_timeline">Timeline</th>
+                <th data-i18n="th_stakeholder">Stakeholder</th>
+                <th data-i18n="th_context">Transaction Context</th>
+                <th class="text-right" data-i18n="th_capital_flow">Capital Flow</th>
+                <th class="text-center" data-i18n="th_verification">Verification</th>
+                <th style="width: 60px;"></th>
               </tr>
             </thead>
-            <tbody id="financesList" style="font-size: 0.875rem;"></tbody>
+            <tbody id="financesList"></tbody>
           </table>
         </div>
       </div>
@@ -505,81 +750,96 @@
 
     <!-- ===== WORKERS ===== -->
     <div class="bl-tab" id="tab-workers">
-      <div class="bl-page-header" style="padding: 1.5rem 0; margin-bottom: 0.5rem; border-bottom: 1px solid var(--mist);">
+      <div class="editorial-page-header" style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--mist); padding-bottom: 2rem;">
         <div>
-          <div class="bl-page-label" data-i18n="label_contacts">Contacts</div>
-          <h2 class="bl-page-title" data-i18n="workers_contractors">Workers & Contractors</h2>
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.25em; color: var(--accent-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 24px; height: 1px; background: var(--accent-main);"></div>
+            Personnel Matrix
+          </div>
+          <h2 style="font-family: 'Oswald', sans-serif; font-size: 3.5rem; font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--text-primary); margin: 0; letter-spacing: -0.02em;">
+            Human <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main);">Capital</span>
+          </h2>
         </div>
-        <button class="bl-btn bl-btn-primary" id="addWorkerBtn" style="padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span data-i18n="add_worker">Add Worker</span>
-        </button>
+        <button id="addWorkerBtn" class="bl-btn bl-btn-primary" onclick="openAddWorkerModal()" style="padding: 0.75rem 2rem; border-radius: 12px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.1em;">+ Enroll Operator</button>
       </div>
       <div id="workersList"></div>
     </div>
 
     <!-- ===== TASKS (KANBAN) ===== -->
     <div class="bl-tab" id="tab-tasks">
-      <div class="bl-page-header" style="padding: 1.5rem 0; margin-bottom: 1rem; border-bottom: 1px solid var(--mist);">
+      <div class="editorial-page-header" style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--mist); padding-bottom: 2rem;">
         <div>
-          <div class="bl-page-label" data-i18n="nav_tasks">Todo List</div>
-          <h2 class="bl-page-title" data-i18n="nav_tasks">Tasks</h2>
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.25em; color: var(--accent-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 24px; height: 1px; background: var(--accent-main);"></div>
+            Execution Framework
+          </div>
+          <h2 style="font-family: 'Oswald', sans-serif; font-size: 3.5rem; font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--text-primary); margin: 0; letter-spacing: -0.02em;">
+            Operation <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main);">Grid</span>
+          </h2>
         </div>
-        <button class="bl-btn bl-btn-primary" id="addTaskBtn" style="padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span data-i18n="add_task">Add Task</span>
-        </button>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <button id="filterHighPriorityBtn" class="bl-btn" onclick="toggleHighPriorityFilter()" style="padding: 0.75rem 1.5rem; border-radius: 12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; background:var(--frost); border:1px solid var(--mist); color:var(--text-secondary); transition:all 0.2s;">
+            High Priority Only
+          </button>
+          <button id="addTaskBtn" class="bl-btn bl-btn-primary" onclick="openAddTaskModal()" style="padding: 0.75rem 2rem; border-radius: 12px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.1em;">+ Add New Task</button>
+        </div>
       </div>
-      <div class="bl-kanban-board" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-        <div class="bl-kanban-col" id="col-todo" ondrop="dropTask(event)" ondragover="allowDropTask(event)" ondragleave="leaveDrop(event)" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1rem;">
-          <div class="bl-kanban-header" style="padding-bottom: 1rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--mist); display: flex; justify-content: space-between; align-items: center;">
-            <span data-i18n="status_todo" style="font-weight: 600;">To Do</span>
-            <span class="bl-kanban-count" id="count-todo" style="background: var(--mist); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">0</span>
+
+      <div class="bl-kanban-board" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+        <div class="bl-kanban-col" id="col-todo" ondrop="dropTask(event)" ondragover="allowDropTask(event)" ondragleave="leaveDrop(event)" style="background: rgba(255,255,255,0.01); border: 1px solid var(--mist); border-radius: 24px; padding: 2rem;">
+          <div class="bl-kanban-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mist); padding-bottom: 1rem;">
+            <span style="font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:1.1rem; font-weight:700; color:var(--text-secondary);">Queue</span>
+            <span class="bl-kanban-count" id="count-todo" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; font-weight:700; color:var(--accent-main);">0</span>
           </div>
-          <div id="tasks-todo" style="min-height: 200px;"></div>
+          <div id="tasks-todo" style="min-height:300px;"></div>
         </div>
-        <div class="bl-kanban-col" id="col-in_progress" ondrop="dropTask(event)" ondragover="allowDropTask(event)" ondragleave="leaveDrop(event)" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1rem;">
-          <div class="bl-kanban-header" style="padding-bottom: 1rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--mist); display: flex; justify-content: space-between; align-items: center;">
-            <span data-i18n="status_active" style="font-weight: 600;">In Progress</span>
-            <span class="bl-kanban-count" id="count-in_progress" style="background: var(--mist); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">0</span>
+        <div class="bl-kanban-col" id="col-in_progress" ondrop="dropTask(event)" ondragover="allowDropTask(event)" ondragleave="leaveDrop(event)" style="background: rgba(255,255,255,0.01); border: 1px solid var(--mist); border-radius: 24px; padding: 2rem;">
+          <div class="bl-kanban-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mist); padding-bottom: 1rem;">
+            <span style="font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:1.1rem; font-weight:700; color:var(--status-active);">Active</span>
+            <span class="bl-kanban-count" id="count-in_progress" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; font-weight:700; color:var(--accent-main);">0</span>
           </div>
-          <div id="tasks-in_progress" style="min-height: 200px;"></div>
+          <div id="tasks-in_progress" style="min-height:300px;"></div>
         </div>
-        <div class="bl-kanban-col" id="col-done" ondrop="dropTask(event)" ondragover="allowDropTask(event)" ondragleave="leaveDrop(event)" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1rem;">
-          <div class="bl-kanban-header" style="padding-bottom: 1rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--mist); display: flex; justify-content: space-between; align-items: center;">
-            <span data-i18n="status_done" style="font-weight: 600;">Done</span>
-            <span class="bl-kanban-count" id="count-done" style="background: var(--mist); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">0</span>
+        <div class="bl-kanban-col" id="col-done" ondrop="dropTask(event)" ondragover="allowDropTask(event)" ondragleave="leaveDrop(event)" style="background: rgba(255,255,255,0.01); border: 1px solid var(--mist); border-radius: 24px; padding: 2rem;">
+          <div class="bl-kanban-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mist); padding-bottom: 1rem;">
+            <span style="font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:1.1rem; font-weight:700; color:var(--status-done);">Done</span>
+            <span class="bl-kanban-count" id="count-done" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; font-weight:700; color:var(--status-done);">0</span>
           </div>
-          <div id="tasks-done" style="min-height: 200px;"></div>
+          <div id="tasks-done" style="min-height:300px;"></div>
         </div>
       </div>
     </div>
 
     <!-- ===== GANTT ===== -->
     <div class="bl-tab" id="tab-gantt">
-      <div class="bl-page-header">
+      <div class="editorial-page-header" style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--mist); padding-bottom: 2rem;">
         <div>
-          <div class="bl-page-label" data-i18n="nav_gantt">Gantt Chart</div>
-          <h2 class="bl-page-title" data-i18n="project_timeline">Project Timeline</h2>
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.25em; color: var(--accent-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 24px; height: 1px; background: var(--accent-main);"></div>
+            Temporal Strategy
+          </div>
+          <h2 style="font-family: 'Oswald', sans-serif; font-size: 3.5rem; font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--text-primary); margin: 0; letter-spacing: -0.02em;">
+            Project <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main);">Timeline</span>
+          </h2>
         </div>
-        <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
-          <div class="bl-gantt-view-tabs">
-            <button class="bl-gantt-view-btn" data-mode="week" onclick="changeGanttView('week')" data-i18n="gantt_view_week">Week</button>
-            <button class="bl-gantt-view-btn active" data-mode="month" onclick="changeGanttView('month')" data-i18n="gantt_view_month">Month</button>
-            <button class="bl-gantt-view-btn" data-mode="quarter" onclick="changeGanttView('quarter')" data-i18n="gantt_view_quarter">Quarter</button>
-          </div>
+        <div style="display:flex; gap:1rem; align-items: center; flex-wrap: wrap;">
+          <!-- Zoom Controls -->
           <div class="bl-gantt-zoom-ctrl">
-            <button class="bl-gantt-zoom-btn" onclick="adjustZoom(-25)" aria-label="Zoom out">−</button>
-            <input type="range" id="ganttZoomSlider" class="bl-gantt-zoom-slider" min="75" max="500" step="25" value="100" oninput="setZoom(+this.value)">
-            <button class="bl-gantt-zoom-btn" onclick="adjustZoom(+25)" aria-label="Zoom in">+</button>
-            <span class="bl-gantt-zoom-label" id="ganttZoomLabel">100%</span>
+            <button class="bl-gantt-zoom-btn" onclick="adjustZoom(-25)">−</button>
+            <input type="range" min="75" max="500" value="200" id="ganttZoomSlider" oninput="setZoom(this.value)" class="bl-gantt-zoom-slider">
+            <button class="bl-gantt-zoom-btn" onclick="adjustZoom(25)">+</button>
+            <span class="bl-gantt-zoom-label" id="ganttZoomLabel">200%</span>
           </div>
-          <button class="bl-gantt-toggle-btn" id="ganttToggleTasksBtn" onclick="toggleGanttTasks()" data-i18n="gantt_hide_tasks">Hide Tasks</button>
 
-          <button class="bl-gantt-pdf-btn" onclick="exportGanttPDF()" title="Save as PDF">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            PDF
-          </button>
+          <!-- View Tabs -->
+          <div class="bl-gantt-view-tabs">
+            <button class="bl-gantt-view-btn" data-mode="week" onclick="changeGanttView('week')" data-i18n="gantt_view_week">WEEK</button>
+            <button class="bl-gantt-view-btn active" data-mode="month" onclick="changeGanttView('month')" data-i18n="gantt_view_month">MONTH</button>
+            <button class="bl-gantt-view-btn" data-mode="quarter" onclick="changeGanttView('quarter')" data-i18n="gantt_view_quarter">QUARTER</button>
+            <button class="bl-gantt-view-btn" data-mode="list" onclick="changeGanttView('list')" data-i18n="cal_view_list">LIST</button>
+          </div>
+
+          <button id="ganttToggleTasksBtn" class="bl-gantt-toggle-btn" onclick="toggleGanttTasks()" data-i18n="gantt_hide_tasks">Hide Tasks</button>
         </div>
       </div>
       <!-- Empty state -->
@@ -597,10 +857,15 @@
 
     <!-- ===== MAP ===== -->
     <div class="bl-tab" id="tab-map">
-      <div class="bl-page-header">
+      <div class="editorial-page-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--mist); padding-bottom: 2rem;">
         <div>
-          <div class="bl-page-label" data-i18n="nav_map">Visual Map</div>
-          <h2 class="bl-page-title" data-i18n="mindmap_title">Mind Map</h2>
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.25em; color: var(--accent-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 24px; height: 1px; background: var(--accent-main);"></div>
+            Spatial Awareness
+          </div>
+          <h2 style="font-family: 'Oswald', sans-serif; font-size: 3.5rem; font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--text-primary); margin: 0; letter-spacing: -0.02em;">
+            Project <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main);">Cartography</span>
+          </h2>
         </div>
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
           <div class="bl-gantt-view-tabs">
@@ -628,176 +893,276 @@
 
     <!-- ===== CALENDAR ===== -->
     <div class="bl-tab" id="tab-calendar">
-      <div class="bl-page-header" style="margin-bottom: 0.5rem;">
+      <div class="editorial-page-header" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--mist); padding-bottom: 2rem;">
         <div>
-          <div class="bl-page-label" data-i18n="nav_calendar">Calendar</div>
-          <h2 class="bl-page-title">
-            <span data-i18n="schedule">Schedule</span>
-            <span id="calTodayHeader" class="bl-cal-header-date"></span>
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.25em; color: var(--accent-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 24px; height: 1px; background: var(--accent-main);"></div>
+            Temporal Grid
+          </div>
+          <h2 style="font-family: 'Oswald', sans-serif; font-size: 3.5rem; font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--text-primary); margin: 0; letter-spacing: -0.02em;">
+            Strategic <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main);">Calendar</span>
+            <span id="calTodayHeader" style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 400; color: var(--text-secondary); text-transform: none; letter-spacing: 0; margin-left: 1rem; vertical-align: middle;"></span>
           </h2>
         </div>
-        <div style="display:flex;gap:0.625rem;align-items:center;flex-wrap:wrap;">
-          <div class="bl-gantt-view-tabs">
-            <button class="bl-gantt-view-btn active" data-calview="dayGridMonth" onclick="switchCalView('dayGridMonth')" data-i18n="cal_view_month">Month</button>
-            <button class="bl-gantt-view-btn" data-calview="timeGridWeek" onclick="switchCalView('timeGridWeek')" data-i18n="cal_view_week">Week</button>
-            <button class="bl-gantt-view-btn" data-calview="listMonth" onclick="switchCalView('listMonth')" data-i18n="cal_view_list">List</button>
-          </div>
-          <div class="bl-cal-filter-group">
-            <button class="bl-cal-filter-btn active" data-filter="phases" onclick="toggleCalFilter('phases')"><span class="bl-cal-fdot" style="background:#48484a"></span><span data-i18n="cal_filter_phases">Phases</span></button>
-            <button class="bl-cal-filter-btn active" data-filter="tasks" onclick="toggleCalFilter('tasks')"><span class="bl-cal-fdot" style="background:#0a84ff"></span><span data-i18n="cal_filter_tasks">Tasks</span></button>
-            <button class="bl-cal-filter-btn active" data-filter="materials" onclick="toggleCalFilter('materials')"><span class="bl-cal-fdot" style="background:#ff9f0a"></span><span data-i18n="cal_filter_materials">Materials</span></button>
-            <button class="bl-cal-filter-btn active" data-filter="payments" onclick="toggleCalFilter('payments')"><span class="bl-cal-fdot" style="background:#ef4444"></span><span data-i18n="cal_filter_payments">Payments</span></button>
+        <div style="display:flex;gap:1.5rem;align-items:center;">
+          <div class="bl-view-switcher-minimal" style="display: flex; background: var(--frost); border: 1px solid var(--mist); border-radius: 999px; padding: 4px; gap: 4px;">
+            <button class="bl-view-btn-m active" data-calview="dayGridMonth" onclick="switchCalView('dayGridMonth')" style="background: none; border: none; padding: 0.5rem 1.25rem; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">Month</button>
+            <button class="bl-view-btn-m" data-calview="timeGridWeek" onclick="switchCalView('timeGridWeek')" style="background: none; border: none; padding: 0.5rem 1.25rem; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">Week</button>
+            <button class="bl-view-btn-m" data-calview="listMonth" onclick="switchCalView('listMonth')" style="background: none; border: none; padding: 0.5rem 1.25rem; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">Agenda</button>
           </div>
         </div>
       </div>
 
-      <!-- Compact Top Info -->
-      <div class="bl-cal-compact-info">
-        <div class="bl-cal-legend-horizontal" id="calLegendRow">
-          <div class="bl-cal-legend-item"><span class="bl-cal-ldot" style="background:#48484a"></span><span data-i18n="cal_phase">Phase</span></div>
-          <div class="bl-cal-legend-item"><span class="bl-cal-ldot" style="background:#0a84ff"></span><span data-i18n="cal_high_priority">Priority</span></div>
-          <div class="bl-cal-legend-item"><span class="bl-cal-ldot" style="background:#30d158"></span><span data-i18n="legend_normal_task">Normal</span></div>
-          <div class="bl-cal-legend-item"><span class="bl-cal-ldot" style="background:#636366;opacity:.5"></span><span data-i18n="legend_done_task">Done</span></div>
-          <div class="bl-cal-legend-item"><span class="bl-cal-ldot" style="background:#ff9f0a"></span>📦 <span data-i18n="legend_order_by">Order</span></div>
-          <div class="bl-cal-legend-item"><span class="bl-cal-ldot" style="background:#22c55e"></span>✅ <span data-i18n="legend_delivered">Delived</span></div>
-          <div class="bl-cal-legend-item"><span class="bl-cal-ldot" style="background:#ef4444"></span>💳 <span data-i18n="legend_payment_due">Payment</span></div>
-        </div>
-        
-        <div class="bl-cal-upcoming-horizontal">
-          <div class="bl-cal-upcoming-h-title" data-i18n="cal_upcoming_30">Upcoming</div>
-          <div class="bl-cal-upcoming-h-list" id="calUpcomingList"></div>
-        </div>
-      </div>
+      <div style="display: grid; grid-template-columns: 320px 1fr; gap: 2rem; margin-bottom: 3rem;">
+        <!-- Left: Filter & Upcoming Sidebar -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+          <div style="background: rgba(255,255,255,0.015); border: 1px solid var(--mist); border-radius: 20px; padding: 1.5rem;">
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 1.25rem;">Filter Layers</div>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <div class="bl-cal-filter-row active" data-filter="phases" onclick="toggleCalFilter('phases')" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: #64748B;"></div>
+                  <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Phases</span>
+                </div>
+                <div class="bl-filter-status" style="width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--mist); display: flex; align-items: center; justify-content: center;"><div class="bl-filter-dot" style="width: 6px; height: 6px; background: var(--accent-main); border-radius: 50%;"></div></div>
+              </div>
+              <div class="bl-cal-filter-row active" data-filter="tasks" onclick="toggleCalFilter('tasks')" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: #0a84ff;"></div>
+                  <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Tasks</span>
+                </div>
+                <div class="bl-filter-status" style="width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--mist); display: flex; align-items: center; justify-content: center;"><div class="bl-filter-dot" style="width: 6px; height: 6px; background: var(--accent-main); border-radius: 50%;"></div></div>
+              </div>
+              <div class="bl-cal-filter-row active" data-filter="materials" onclick="toggleCalFilter('materials')" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: #ff9f0a;"></div>
+                  <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Materials</span>
+                </div>
+                <div class="bl-filter-status" style="width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--mist); display: flex; align-items: center; justify-content: center;"><div class="bl-filter-dot" style="width: 6px; height: 6px; background: var(--accent-main); border-radius: 50%;"></div></div>
+              </div>
+              <div class="bl-cal-filter-row active" data-filter="payments" onclick="toggleCalFilter('payments')" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></div>
+                  <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Payments</span>
+                </div>
+                <div class="bl-filter-status" style="width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--mist); display: flex; align-items: center; justify-content: center;"><div class="bl-filter-dot" style="width: 6px; height: 6px; background: var(--accent-main); border-radius: 50%;"></div></div>
+              </div>
+            </div>
+          </div>
 
-      <div class="bl-cal-main">
-        <div id="calendar"></div>
+          <div style="background: rgba(255,255,255,0.015); border: 1px solid var(--mist); border-radius: 20px; padding: 1.5rem;">
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 1.25rem;">Upcoming Agenda</div>
+            <div id="calUpcomingList" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+          </div>
+        </div>
+
+        <!-- Right: The Calendar Surface -->
+        <div style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 24px; padding: 2rem; position: relative; overflow: hidden;">
+          <div id="calendar"></div>
+        </div>
       </div>
     </div>
 
 
-    <!-- ===== SETTINGS ===== -->
-    <div class="bl-tab" id="tab-settings" style="padding: 1.5rem;">
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-        <!-- SECTION 1: PROJECT IDENTITY -->
-        <div style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--mist);">
-            <span style="font-weight: 600; font-size: 0.8rem;" data-i18n="lbl_project">PROJECT</span>
-            <button id="btnSettingsProj" onclick="openModal('projectListModal')" style="font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--mist); background: transparent; color: var(--text-secondary); cursor: pointer;">SWITCH</button>
-          </div>
-          <form id="settingsForm">
-            <input type="hidden" name="csrf_token" value="dummy">
-            <div style="margin-bottom: 0.75rem;">
-              <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;" data-i18n="lbl_project_name">Title</label>
-              <input type="text" name="title" id="sTitle" placeholder="Project name" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--mist); background: var(--frost);">
-            </div>
-            <div style="margin-bottom: 0.75rem;">
-              <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;" data-i18n="lbl_address">Address</label>
-              <input type="text" name="address" id="sAddress" placeholder="Location" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--mist); background: var(--frost);">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <div>
-                <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;" data-i18n="lbl_budget">Budget</label>
-                <input type="number" name="total_budget" id="sBudget" min="0" step="1000" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--mist); background: var(--frost);">
+    <!-- ===== SETTINGS (Site of the Month Edition) ===== -->
+    <div class="bl-tab" id="tab-settings">
+      
+      <!-- Editorial Page Header: Centered & Focused -->
+      <div class="editorial-page-header" style="max-width: 800px; margin: 0 auto 4rem; text-align: center; border-bottom: 1px solid var(--mist); padding-bottom: 3rem;">
+        <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; color: var(--accent-main); margin-bottom: 1.5rem;">
+          SYSTEM CONFIGURATION
+        </div>
+        <h2 style="font-family: 'Oswald', sans-serif; font-size: clamp(3rem, 8vw, 5rem); font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--text-primary); margin: 0; letter-spacing: -0.04em;">
+          GLOBAL <span style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; color: var(--accent-main); text-transform: none;">Preferences</span>
+        </h2>
+        <p style="margin: 2rem auto 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.15rem; color: var(--text-secondary); max-width: 600px; line-height: 1.7; opacity: 0.7;">
+          Tailor your operational environment. Manage project metadata, localization vectors, and system-wide security parameters.
+        </p>
+      </div>
+
+      <!-- Main Settings Container: Single Column -->
+      <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 3rem; padding-bottom: 5rem;">
+        
+        <!-- PROJECT IDENTITY -->
+        <div class="bl-card" style="padding: 3.5rem; position: relative; border-radius: 32px; background: var(--card-bg); border: 1px solid var(--mist); box-shadow: var(--card-shadow);">
+           <div style="position:absolute; top:0; left:50%; transform: translateX(-50%); width:80px; height:4px; background: var(--accent-main); border-radius: 0 0 10px 10px;"></div>
+           
+           <h3 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; margin-bottom: 3rem; color: var(--text-primary); letter-spacing: 0.05em; text-align: center;">
+             Project Dossier
+           </h3>
+           
+           <form id="settingsForm" style="display: flex; flex-direction: column; gap: 2rem;">
+              <input type="hidden" name="csrf_token" value="dummy">
+              
+              <div class="form-group-custom">
+                <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block; opacity: 0.6;">Title</label>
+                <input type="text" name="title" id="sTitle" placeholder="Project name" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: 1px solid var(--mist); background: var(--frost); font-family: inherit; color: var(--text-primary); font-size: 1rem;">
               </div>
-              <div>
-                <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;" data-i18n="lbl_exchange_rate">Rate</label>
-                <input type="number" name="exchange_rate" id="sExRate" min="0" step="0.01" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--mist); background: var(--frost);">
+
+              <div class="form-group-custom">
+                <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block; opacity: 0.6;">Strategic Location</label>
+                <input type="text" name="address" id="sAddress" placeholder="Location" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: 1px solid var(--mist); background: var(--frost); font-family: inherit; color: var(--text-primary); font-size: 1rem;">
               </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <div>
-                <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;" data-i18n="lbl_start_date">Start</label>
-                <input type="date" name="start_date" id="sStart" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--mist); background: var(--frost);">
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                <div class="form-group-custom">
+                  <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block; opacity: 0.6;">Capital Buffer</label>
+                  <input type="number" name="total_budget" id="sBudget" min="0" step="1000" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: 1px solid var(--mist); background: var(--frost); color: var(--text-primary); font-size: 1rem;">
+                </div>
+                <div class="form-group-custom">
+                  <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block; opacity: 0.6;">Exchange Index</label>
+                  <input type="number" name="exchange_rate" id="sExRate" min="0" step="0.01" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: 1px solid var(--mist); background: var(--frost); color: var(--text-primary); font-size: 1rem;">
+                </div>
               </div>
-              <div>
-                <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;" data-i18n="lbl_end_date_short">End</label>
-                <input type="date" name="end_date" id="sEnd" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--mist); background: var(--frost);">
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                <div class="form-group-custom">
+                  <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block; opacity: 0.6;">Commencement</label>
+                  <input type="date" name="start_date" id="sStart" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: 1px solid var(--mist); background: var(--frost); color: var(--text-primary); font-size: 1rem;">
+                </div>
+                <div class="form-group-custom">
+                  <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block; opacity: 0.6;">Projected Cease</label>
+                  <input type="date" name="end_date" id="sEnd" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: 1px solid var(--mist); background: var(--frost); color: var(--text-primary); font-size: 1rem;">
+                </div>
               </div>
-            </div>
-            <button type="submit" class="bl-btn bl-btn-primary" style="width: 100%; padding: 0.5rem; font-size: 0.8rem; border-radius: 8px;" data-i18n="save_settings">SAVE</button>
-          </form>
+
+              <div class="form-group-custom">
+                <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block; opacity: 0.6;">Internal Dossier Notes</label>
+                <textarea name="notes" id="sNotes" rows="3" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: 1px solid var(--mist); background: var(--frost); font-family: inherit; color: var(--text-primary); resize: vertical; font-size: 1rem;"></textarea>
+              </div>
+
+              <button type="submit" class="bl-btn bl-btn-primary" style="width: 100%; padding: 1.5rem; font-size: 1rem; border-radius: 18px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.15em; margin-top: 1rem; box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);" data-i18n="save_settings">Coordinate Changes</button>
+           </form>
         </div>
 
-        <!-- SECTION 2: PREFERENCES -->
-        <div style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1.25rem;">
-          <div style="font-weight: 600; font-size: 0.8rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--mist);" data-i18n="lbl_localization">PREFERENCES</div>
-          
-          <div style="margin-bottom: 1rem;">
-            <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Language</label>
-            <div style="display: flex; gap: 0.25rem;">
-              <button class="bl-lang-btn" data-lang="en" style="padding: 0.4rem 0.6rem; font-size: 0.65rem; border-radius: 6px;">EN</button>
-              <button class="bl-lang-btn" data-lang="sr" style="padding: 0.4rem 0.6rem; font-size: 0.65rem; border-radius: 6px;">SR</button>
-              <button class="bl-lang-btn" data-lang="ru" style="padding: 0.4rem 0.6rem; font-size: 0.65rem; border-radius: 6px;">RU</button>
-              <button class="bl-lang-btn" data-lang="zh" style="padding: 0.4rem 0.6rem; font-size: 0.65rem; border-radius: 6px;">CN</button>
-            </div>
-          </div>
-          
-          <div style="margin-bottom: 1rem;">
-            <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">Currency</label>
-            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
-              <button class="bl-lang-btn" data-cur="rsd" style="padding: 0.4rem 0.5rem; font-size: 0.65rem; border-radius: 6px;">RSD</button>
-              <button class="bl-lang-btn" data-cur="eur" style="padding: 0.4rem 0.5rem; font-size: 0.65rem; border-radius: 6px;">EUR</button>
-              <button class="bl-lang-btn" data-cur="usd" style="padding: 0.4rem 0.5rem; font-size: 0.65rem; border-radius: 6px;">USD</button>
-              <button class="bl-lang-btn" data-cur="rub" style="padding: 0.4rem 0.5rem; font-size: 0.65rem; border-radius: 6px;">RUB</button>
-              <button class="bl-lang-btn" data-cur="cny" style="padding: 0.4rem 0.5rem; font-size: 0.65rem; border-radius: 6px;">CNY</button>
-            </div>
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-            <button class="bl-theme-tile" data-theme-pick="v2-dark"  onclick="setTheme('v2-dark')"><span class="bl-theme-tile-dot" style="background:#0D1117;border-color:#6366F1;"></span><span class="bl-theme-tile-name">Indigo Dark</span></button>
-            <button class="bl-theme-tile" data-theme-pick="v2-light" onclick="setTheme('v2-light')"><span class="bl-theme-tile-dot" style="background:#F1F5F9;border-color:#6366F1;"></span><span class="bl-theme-tile-name">Indigo Light</span></button>
-            <button class="bl-theme-tile" data-theme-pick="v1-dark"  onclick="setTheme('v1-dark')"><span class="bl-theme-tile-dot" style="background:#1c1c1e;border-color:#636366;"></span><span class="bl-theme-tile-name">Classic Dark</span></button>
-            <button class="bl-theme-tile" data-theme-pick="v1-light" onclick="setTheme('v1-light')"><span class="bl-theme-tile-dot" style="background:#f5f5f5;border-color:#c7c7cc;"></span><span class="bl-theme-tile-name">Classic Light</span></button>
-          </div>
+        <!-- LOCALIZATION & THEME -->
+        <div class="bl-card" style="padding: 3.5rem; border-radius: 32px; border: 1px solid var(--mist);">
+           <h3 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; margin-bottom: 3rem; color: var(--text-primary); letter-spacing: 0.05em; text-align: center;">
+             Interface Protocol
+           </h3>
+
+           <div style="display: flex; flex-direction: column; gap: 3rem;">
+             <div>
+               <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-secondary); margin-bottom: 1.5rem; display: block; text-align: center;">Language Vector</label>
+               <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;">
+                 <button class="bl-lang-btn" data-lang="en" style="padding: 1rem; border-radius: 14px; font-weight: 700;">EN</button>
+                 <button class="bl-lang-btn" data-lang="sr" style="padding: 1rem; border-radius: 14px; font-weight: 700;">SR</button>
+                 <button class="bl-lang-btn" data-lang="ru" style="padding: 1rem; border-radius: 14px; font-weight: 700;">RU</button>
+                 <button class="bl-lang-btn" data-lang="zh" style="padding: 1rem; border-radius: 14px; font-weight: 700;">ZH</button>
+               </div>
+             </div>
+
+             <div>
+               <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-secondary); margin-bottom: 1.5rem; display: block; text-align: center;">Currency Standard</label>
+               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 0.75rem;">
+                 <button class="bl-lang-btn" data-cur="rsd" style="padding: 1rem; border-radius: 14px; font-weight: 700;">RSD</button>
+                 <button class="bl-lang-btn" data-cur="eur" style="padding: 1rem; border-radius: 14px; font-weight: 700;">EUR</button>
+                 <button class="bl-lang-btn" data-cur="usd" style="padding: 1rem; border-radius: 14px; font-weight: 700;">USD</button>
+                 <button class="bl-lang-btn" data-cur="rub" style="padding: 1rem; border-radius: 14px; font-weight: 700;">RUB</button>
+                 <button class="bl-lang-btn" data-cur="cny" style="padding: 1rem; border-radius: 14px; font-weight: 700;">CNY</button>
+               </div>
+             </div>
+
+             <div>
+               <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-secondary); margin-bottom: 1.5rem; display: block; text-align: center;">Visual Archetype</label>
+               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem;">
+                 <button class="bl-theme-tile" data-theme-pick="v1-dark" onclick="setTheme('v1-dark')" style="padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; justify-content: center; gap: 1rem; border: 1px solid var(--mist); background: var(--frost);">
+                   <div style="width: 24px; height: 24px; border-radius: 50%; background: #0D1117; border: 2px solid #30363d;"></div>
+                   <span style="font-size: 0.9rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Onyx Dark</span>
+                 </button>
+                 <button class="bl-theme-tile" data-theme-pick="v1-light" onclick="setTheme('v1-light')" style="padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; justify-content: center; gap: 1rem; border: 1px solid var(--mist); background: var(--frost);">
+                   <div style="width: 24px; height: 24px; border-radius: 50%; background: #fdfaf7; border: 2px solid #e2e8f0;"></div>
+                   <span style="font-size: 0.9rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Ivory Light</span>
+                 </button>
+               </div>
+             </div>
+           </div>
         </div>
 
-        <!-- SECTION 3: TEMPLATES -->
-        <div style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1.25rem;">
-          <div style="font-weight: 600; font-size: 0.8rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--mist);" data-i18n="lbl_templates">TEMPLATES</div>
-          <!-- Locked: shown for free users -->
-          <div id="templateSectionLocked" style="display:block; text-align:center; padding: 0.75rem 0;">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔒</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; line-height: 1.5;">Pre-filled templates with phases, tasks, workers &amp; prices — ready to use in one click.</div>
-            <a href="https://renovationsteps.com/pricing.html" target="_blank" style="display:inline-block; padding: 0.5rem 1.25rem; background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; font-size: 0.75rem; font-weight: 600; border-radius: 8px; text-decoration: none; letter-spacing: 0.03em;">Get Templates — €20</a>
-          </div>
+        <!-- DATA & ASSETS -->
+        <div class="bl-card" style="padding: 3.5rem; border-radius: 32px; border: 1px solid var(--mist);">
+           <h3 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; margin-bottom: 3rem; color: var(--text-primary); letter-spacing: 0.05em; text-align: center;">
+             Asset intelligence
+           </h3>
+           <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <button class="bl-btn bl-btn-primary" onclick="exportGanttPDF()" style="width: 100%; padding: 1.5rem; border-radius: 18px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.15em; display: flex; align-items: center; justify-content: center; gap: 1.25rem;">
+                <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+                Synchronize PDF Intelligence
+              </button>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <button onclick="exportProjectData()" style="padding: 1.5rem; border-radius: 18px; background: var(--frost); border: 1px solid var(--mist); color: var(--text-primary); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1rem; font-family: inherit;">
+                  <i data-lucide="download-cloud" style="width: 28px; height: 28px; color: var(--accent-main); opacity: 0.8;"></i>
+                  <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6;">Backup Dossier</span>
+                </button>
+                <button onclick="document.getElementById('importFileInput').click()" style="padding: 1.5rem; border-radius: 18px; background: var(--frost); border: 1px solid var(--mist); color: var(--text-primary); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1rem; font-family: inherit;">
+                  <i data-lucide="upload-cloud" style="width: 28px; height: 28px; color: var(--accent-main); opacity: 0.8;"></i>
+                  <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6;">Import Matrix</span>
+                </button>
+              </div>
+              <input type="file" id="importFileInput" style="display:none" accept=".plan" onchange="importProjectData(this)">
+              
+              <div style="margin-top: 1rem; padding: 2rem; border-radius: 20px; background: rgba(99, 102, 241, 0.03); border: 1px dashed rgba(99, 102, 241, 0.2);">
+                 <button class="bl-btn" onclick="generateShareToken()" style="width: 100%; padding: 1.25rem; border-radius: 14px; border: 1px solid var(--accent-main); color: var(--accent-main); font-family:'Oswald',sans-serif; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700; background: transparent;">Generate Digital Key</button>
+                 <div id="shareTokenSection" style="display:none; margin-top: 1.5rem;">
+                    <input type="text" id="shareTokenInput" readonly style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--mist); background: var(--card-bg); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent-main); text-align: center;">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.75rem; text-align: center; line-height: 1.5; opacity: 0.6;">Share this read-only access vector with external stakeholders.</p>
+                 </div>
+              </div>
+           </div>
         </div>
 
-        <!-- SECTION 4: ACCESS & REPORTS -->
-        <div style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; padding: 1.25rem;">
-          <div style="font-weight: 600; font-size: 0.8rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--mist);" data-i18n="lbl_reporting">REPORTS & SHARING</div>
-          <button class="bl-btn bl-btn-primary" onclick="exportGanttPDF()" style="width: 100%; padding: 0.5rem; font-size: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;" data-i18n="generate_pdf">
-            GENERATE PDF
-          </button>
-          <button class="heroSecondary" onclick="exportProjectData()" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; border-radius: 12px; color: #fff; font-weight: 600; cursor: pointer; border:none; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <i data-lucide="download-cloud" style="width: 18px; height: 18px;"></i>
-            <span data-i18n="backup_project">Backup Project (.plan)</span>
-          </button>
-          <button class="heroSecondary" onclick="document.getElementById('importFileInput').click()" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; border-radius: 12px; color: #fff; font-weight: 600; cursor: pointer; border:none; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <i data-lucide="upload-cloud" style="width: 18px; height: 18px;"></i>
-            <span data-i18n="import_project">Import Project (.plan)</span>
-          </button>
-          <input type="file" id="importFileInput" style="display:none" accept=".plan" onchange="importProjectData(this)">
-          <button class="bl-btn" onclick="generateShareToken()" style="width: 100%; padding: 0.5rem; font-size: 0.75rem; border-radius: 8px; border: 1px solid var(--mist);" data-i18n="share_generate">GENERATE ACCESS LINK</button>
-          <div id="shareTokenSection" style="display:none; margin-top: 0.5rem;">
-            <input type="text" id="shareTokenInput" readonly style="width: 100%; padding: 0.4rem; font-size: 0.7rem; border-radius: 6px; border: 1px solid var(--mist); background: var(--frost); font-family: monospace;">
-          </div>
+        <!-- KNOWLEDGE & BLUEPRINTS -->
+        <div class="bl-card" style="padding: 3.5rem; border-radius: 32px; background: linear-gradient(180deg, var(--card-bg) 0%, rgba(99, 102, 241, 0.03) 100%); border: 1px solid var(--mist);">
+           <h3 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1.5rem; color: var(--text-primary); letter-spacing: 0.05em; text-align: center;">
+             Operational Blueprints
+           </h3>
+           <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 3rem; text-align: center; opacity: 0.8;">Accelerate your construction pipeline with industry-standard engineered project blueprints.</p>
+           
+           <div id="templateSectionUnlocked" style="display:none; flex-direction: column; gap: 1rem;">
+             <button class="bl-btn" onclick="previewTemplate('garsonjera')" style="padding: 1.5rem; border-radius: 20px; border: 1px solid var(--mist); background: var(--frost); text-align: left; display: flex; align-items: center; justify-content: space-between;">
+               <div>
+                  <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">STUDIO STRATEGY</div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em;">Standard 1-Room Layout</div>
+               </div>
+               <i data-lucide="chevron-right" style="width: 24px; height: 24px; opacity: 0.3;"></i>
+             </button>
+             <button class="bl-btn" onclick="previewTemplate('dvosoban')" style="padding: 1.5rem; border-radius: 20px; border: 1px solid var(--mist); background: var(--frost); text-align: left; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">2-ROOM DOSSIER</div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em;">Medium-scale operational plan</div>
+               </div>
+               <i data-lucide="chevron-right" style="width: 24px; height: 24px; opacity: 0.3;"></i>
+             </button>
+             <button class="bl-btn" onclick="previewTemplate('trosoban')" style="padding: 1.5rem; border-radius: 20px; border: 1px solid var(--mist); background: var(--frost); text-align: left; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">3-ROOM FRAMEWORK</div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em;">Large family estate architecture</div>
+               </div>
+               <i data-lucide="chevron-right" style="width: 24px; height: 24px; opacity: 0.3;"></i>
+             </button>
+           </div>
+           
+           <div id="templateSectionLocked" style="display:flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2rem 0;">
+              <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--frost); display: flex; align-items: center; justify-content: center; border: 1px solid var(--mist);">
+                <i data-lucide="lock" style="width: 32px; height: 32px; color: var(--accent-main); opacity: 0.4;"></i>
+              </div>
+              <button onclick="checkoutTemplates()" class="bl-btn bl-btn-primary" style="width: 100%; padding: 1.5rem; border-radius: 18px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.15em; font-weight: 700;">Purchase Full Blueprint Access</button>
+           </div>
         </div>
 
-        <!-- SECTION 5: DANGER ZONE -->
-        <div style="background: var(--card-bg); border: 1px solid rgba(255,59,48,0.2); border-radius: 16px; padding: 1.25rem;">
-          <div style="font-weight: 600; font-size: 0.8rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,59,48,0.2); color: #ff3b30;" data-i18n="lbl_danger_zone">DANGER ZONE</div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="bl-btn" onclick="resetProjectData('tasks')" style="flex: 1; padding: 0.5rem; font-size: 0.7rem; border-radius: 8px; background: rgba(255,59,48,0.05); border: 1px solid rgba(255,59,48,0.2); color: #ff3b30;" data-i18n="delete_tasks">
-              DELETE TASKS
-            </button>
-            <button class="bl-btn" onclick="resetProjectData('all')" style="flex: 1; padding: 0.5rem; font-size: 0.7rem; border-radius: 8px; background: rgba(255,59,48,0.1); border: 1px solid #ff3b30; color: #ff3b30; font-weight: 600;" data-i18n="delete_all">
-              DELETE ALL
-            </button>
-          </div>
+        <!-- SECURITY & CLEARANCE -->
+        <div class="bl-card" style="padding: 3.5rem; border-radius: 32px; border: 1px solid rgba(239, 68, 68, 0.1); background: rgba(239, 68, 68, 0.01);">
+           <h3 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1.5rem; color: #ef4444; letter-spacing: 0.05em; text-align: center;">
+             Terminal Clearance
+           </h3>
+           <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; color: var(--text-secondary); text-align: center; margin-bottom: 3rem; opacity: 0.8;">Dangerous operations. Terminating a project dossier is irreversible. Proceed with maximum caution.</p>
+           
+           <button class="bl-btn bl-btn-danger" onclick="deleteCurrentProject()" style="width: 100%; padding: 1.5rem; border-radius: 18px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.15em; font-weight: 700; border: 1px solid rgba(239, 68, 68, 0.2);">
+             EXTINGUISH CURRENT PROJECT
+           </button>
         </div>
-
-        <!-- Empty cell for grid balance -->
-        <div></div>
+        </div>
       </div>
     </div>
     <!-- PAYMENTS section removed - merged into FINANCES -->
@@ -809,7 +1174,7 @@
           <div class="bl-page-label" data-i18n="nav_materials">Materials</div>
           <h2 class="bl-page-title" data-i18n="materials_title">Shopping List</h2>
         </div>
-        <button class="bl-btn bl-btn-primary" id="addMaterialBtn" style="padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <button class="bl-btn bl-btn-primary" id="addMaterialBtn" onclick="openAddMaterialModal()" style="padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span data-i18n="add_material">Add Material</span>
         </button>
@@ -844,24 +1209,24 @@
         <button class="mat-filter-btn" data-filter="installed" onclick="filterMaterials('installed')" data-i18n="mat_filter_installed" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--mist); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">Installed</button>
       </div>
 
-      <div class="bl-card" style="background: var(--card-bg); border: 1px solid var(--mist); border-radius: 16px; overflow: hidden;">
-        <div class="bl-card-body" style="padding: 0;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--mist); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">
-                <th style="padding: 1rem; text-align: left;" data-i18n="mat_name">Item</th>
-                <th style="padding: 1rem; text-align: left;" data-i18n="mat_phase">Phase</th>
-                <th style="padding:1rem 0.5rem;text-align:right;" data-i18n="mat_qty">Qty</th>
-                <th style="padding:1rem 0.5rem;text-align:right;" data-i18n="mat_price">Price</th>
-                <th style="padding:1rem 0.5rem;text-align:right;" data-i18n="mat_total">Total</th>
-                <th style="padding:1rem 0.5rem;text-align:left;" data-i18n="mat_store">Store</th>
-                <th style="padding:1rem 0.5rem;text-align:left;" data-i18n="mat_order_by">Order By</th>
-                <th style="padding:1rem 0.5rem;text-align:left;" data-i18n="th_status">Status</th>
-                <th style="padding:1rem 0.5rem;"></th>
-              </tr>
-            </thead>
-            <tbody id="materialsList"></tbody>
-          </table>
+      <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; border: 1px solid var(--mist);">
+        <div class="bl-card" style="background: var(--card-bg); border-radius: 16px; overflow: hidden; min-width: 700px;">
+          <div class="bl-card-body" style="padding: 0;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--mist); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;">
+                  <th style="padding: 1rem; text-align: left; white-space: nowrap;" data-i18n="mat_name">Item</th>
+                  <th style="padding: 1rem; text-align: left; white-space: nowrap;" data-i18n="mat_phase">Phase</th>
+                  <th style="padding:1rem 0.5rem;text-align:right; white-space: nowrap;" data-i18n="mat_qty">Qty</th>
+                  <th style="padding:1rem 0.5rem;text-align:right; white-space: nowrap;" data-i18n="mat_price">Price/Unit</th>
+                  <th style="padding:1rem 0.5rem;text-align:right; white-space: nowrap;" data-i18n="mat_total">Total</th>
+                  <th style="padding:1rem 0.5rem;text-align:left; white-space: nowrap;" data-i18n="th_status">Status</th>
+                  <th style="padding:1rem 0.5rem; white-space: nowrap;"></th>
+                </tr>
+              </thead>
+              <tbody id="materialsList"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -874,18 +1239,33 @@
 
 <!-- ===== MODALS ===== -->
 
-<!-- Search Modal -->
-<div class="bl-modal-overlay" id="searchModal">
-  <div class="bl-modal" style="max-width: 600px; padding:0; background:var(--card-bg);">
-    <div style="padding: 1.25rem; border-bottom: 1px solid var(--mist); display:flex; align-items:center; gap: 1rem;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="globalSearchInput" data-i18n-ph="search_placeholder" placeholder="Search tasks, phases, workers, materials..." style="flex:1; border:none; background:transparent; font-size: 1.1rem; color: var(--text-primary); outline: none;" autocomplete="off">
-      <button class="bl-modal-close" data-modal="searchModal" style="position:static;">✕</button>
-    </div>
-    <div class="bl-modal-body" style="max-height: 400px; overflow-y: auto; padding: 0;">
-      <div id="globalSearchResults" style="padding: 0.5rem 1rem;">
-         <div style="padding: 2rem; text-align: center; color: var(--text-secondary); opacity: 0.6; font-size: 0.85rem;" data-i18n="type_to_search">Type to start searching...</div>
+<!-- Premium Search Command Palette -->
+<div class="bl-modal-overlay search-palette-overlay" id="searchModal" onclick="if(event.target===this) closeModal('searchModal')">
+  <div class="search-palette-card">
+    <div class="search-input-wrapper">
+      <i data-lucide="search" style="width:20px; height:20px; color:var(--accent-main); opacity:0.8;"></i>
+      <input type="text" id="globalSearchInput" class="search-input-field" data-i18n-ph="search_placeholder" placeholder="Search for anything..." autocomplete="off">
+      <div style="display:flex; align-items:center; gap:0.4rem;">
+        <span class="search-kbd">Esc</span>
       </div>
+    </div>
+    
+    <div id="globalSearchResults" class="search-results-area">
+       <div style="padding: 3.5rem 2rem; text-align: center; color: var(--text-secondary); opacity: 0.4; font-size: 0.9rem;">
+          <i data-lucide="command" style="width:32px; height:32px; margin-bottom:1rem;"></i>
+          <div data-i18n="type_to_search">Type to explore your construction lifecycle...</div>
+       </div>
+    </div>
+    
+    <div class="search-footer">
+       <div class="search-hints">
+          <div class="search-hint"><span class="search-kbd">↑↓</span> <span data-i18n="nav_navigate">Navigate</span></div>
+          <div class="search-hint"><span class="search-kbd">↵</span> <span data-i18n="nav_select">Select</span></div>
+       </div>
+       <div class="search-hint">
+         <span class="search-kbd">Cmd</span> + <span class="search-kbd">K</span> 
+         <span data-i18n="nav_search_hint" style="margin-left: 0.3rem;">to search anytime</span>
+       </div>
     </div>
   </div>
 </div>
@@ -910,7 +1290,7 @@
         </div>
         <div class="form-group" style="margin-bottom:1rem;">
           <label for="phaseStatus" data-i18n="lbl_status">Status</label>
-          <select id="phaseStatus" style="background:var(--frost);border:1px solid var(--mist);border-radius:0.375rem;padding:0.875rem 1.25rem;font-family:inherit;font-size:0.9375rem;color:var(--ink);width:100%;outline:none;">
+          <select id="phaseStatus" style="background:var(--frost);border:1px solid var(--mist);border-radius:0.375rem;padding:0.875rem 1.25rem;font-family:inherit;font-size:0.9375rem;color:var(--ink);width:100%;outline:none;" onchange="updateSelectColor(this)">
             <option value="pending" data-i18n-opt="status_pending">Pending</option>
             <option value="active" data-i18n-opt="status_active">In Progress</option>
             <option value="done" data-i18n-opt="status_done">Completed</option>
@@ -937,11 +1317,12 @@
 <div class="bl-modal-overlay" id="expenseModal">
   <div class="bl-modal">
     <div class="bl-modal-header">
-      <h3 data-i18n="add_expense_title">Add Expense</h3>
+      <h3 id="expenseModalTitle" data-i18n="add_expense_title">Add Expense</h3>
       <button class="bl-modal-close" data-modal="expenseModal">✕</button>
     </div>
     <div class="bl-modal-body">
       <form id="expenseForm">
+        <input type="hidden" id="expId">
         <div class="form-group" style="margin-bottom:1rem;">
           <label for="expDesc" data-i18n="th_description">Description</label>
           <input type="text" id="expDesc" required>
@@ -1107,9 +1488,9 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
           <div class="form-group">
             <label for="taskStatus" data-i18n="lbl_status" class="bl-label-premium">Current Status</label>
-            <select id="taskStatus" class="bl-input-premium" style="height:46px;">
+            <select id="taskStatus" class="bl-input-premium" style="height:46px;" onchange="updateSelectColor(this)">
               <option value="todo" data-i18n-opt="status_todo">To Do</option>
-              <option value="in_progress" data-i18n-opt="status_active">In Progress</option>
+              <option value="in_progress" data-i18n-opt="status_active">Active</option>
               <option value="done" data-i18n-opt="status_done">Done</option>
             </select>
           </div>
@@ -1126,7 +1507,7 @@
 
         <div style="display:flex; gap:1rem; justify-content:flex-end; border-top:1px solid var(--mist); padding-top:2rem; margin-top:2rem;">
           <button type="button" class="bl-btn-cancel" data-modal="taskModal" data-i18n="btn_cancel">Cancel</button>
-          <button type="submit" class="bl-btn-save" data-i18n="btn_add">Save Changes</button>
+          <button type="submit" id="taskSubmitBtn" class="bl-btn-save" data-i18n="btn_add">Save Changes</button>
         </div>
       </form>
     </div>
@@ -1361,80 +1742,12 @@
   </div>
 </div>
 
-<!-- Task Detail Modal -->
-<div class="bl-modal-overlay" id="taskDetailModal">
-  <div class="bl-modal" style="width:calc(100% - 40px); max-width:1400px; margin:20px auto;">
-    <div class="bl-modal-header">
-      <h2 data-i18n="task_detail_title">Task Details</h2>
-      <button class="bl-modal-close" data-modal="taskDetailModal">&#x2715;</button>
-    </div>
-    <div class="bl-modal-body" id="taskDetailContent" style="max-height:85vh;overflow:hidden;padding:0;border-radius:0 0 12px 12px;">
-    </div>
-  </div>
-</div>
-
-<!-- Login Overlay -->
-<div class="bl-onboard-overlay" id="loginOverlay" style="z-index: 10000; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); backdrop-filter:blur(12px); display: none; align-items: center; justify-content: center;">
-  <div style="background:linear-gradient(180deg,#0a0a0f,#0d0d14); border:1px solid rgba(99,102,241,0.2); border-radius:24px; padding:3rem; max-width:420px; width:90%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.8), 0 0 100px rgba(99,102,241,0.1); animation:slideUp 0.3s ease-out; position:relative;">
-    <div id="loginForm">
-      <a href="https://renovationsteps.com" target="_blank" style="display:flex; justify-content:center; margin-bottom:1.5rem;">
-        <svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="color:#fff;">
-          <rect x="5" y="5" width="90" height="90" rx="20" fill="none" stroke="currentColor" stroke-width="6"/>
-          <rect x="25" y="30" width="15" height="10" rx="2" fill="currentColor"/>
-          <rect x="40" y="45" width="25" height="10" rx="2" fill="currentColor"/>
-          <rect x="60" y="60" width="15" height="10" rx="2" fill="currentColor"/>
-        </svg>
-      </a>
-      <h2 style="text-align:center; font-size:1.75rem; font-weight:700; margin-bottom:0.5rem; color:#fff;" data-i18n="role_client">Sign In</h2>
-      <p style="text-align:center; color:rgba(255,255,255,0.5); margin-bottom:1.5rem; font-size: 0.9rem;" data-i18n="login_subtitle">Enter your username and password to access the planner.</p>
-      
-      <div style="margin-bottom:1rem;">
-        <label style="display:block; font-size:0.7rem; color:rgba(255,255,255,0.6); margin-bottom:0.5rem; text-transform:uppercase; font-weight: 600; letter-spacing: 0.05em;" data-i18n="lbl_username">Korisničko ime</label>
-        <input type="text" id="loginUser" value="" style="width:100%; padding:0.85rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:1rem; transition: border-color 0.2s;" onkeydown="if(event.key==='Enter') attemptLogin()" onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-
-      </div>
-      
-      <div style="margin-bottom:1.5rem;">
-        <label style="display:block; font-size:0.7rem; color:rgba(255,255,255,0.6); margin-bottom:0.5rem; text-transform:uppercase; font-weight: 600; letter-spacing: 0.05em;" data-i18n="lbl_password">Lozinka</label>
-        <input type="password" id="loginPass" value="" style="width:100%; padding:0.85rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:1rem; transition: border-color 0.2s;" onkeydown="if(event.key==='Enter') attemptLogin()" onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-      </div>
-      
-      <p id="loginError" style="color:#ff4b4b; font-size:0.85rem; display:none; margin-bottom:1.5rem; text-align: center;" data-i18n="login_error">Pogrešno korisničko ime ili lozinka.</p>
-      
-      <button onclick="attemptLogin()" class="heroSecondary" style="width:100%; padding:1rem; border-radius:12px; color:#fff; font-size:1rem; font-weight:600; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <span data-i18n="btn_login">Login</span>
-        <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
-      </button>
-      <p style="text-align:center; margin-top:1.25rem; font-size:0.85rem;">
-        <a href="#" onclick="showForgotForm(); return false;" style="color:rgba(99,102,241,0.8); text-decoration:none;" data-i18n="forgot_password">Forgot password?</a>
-      </p>
-    </div>
-
-    <!-- Forgot password form -->
-    <div id="forgotForm" style="display:none;">
-      <h2 style="text-align:center; font-size:1.5rem; font-weight:700; margin-bottom:0.5rem; color:#fff;" data-i18n="forgot_title">Reset Password</h2>
-      <p style="text-align:center; color:rgba(255,255,255,0.5); margin-bottom:1.5rem; font-size:0.9rem;" data-i18n="forgot_subtitle">Enter your email and we'll send a reset link.</p>
-      <div style="margin-bottom:1rem;">
-        <label style="display:block; font-size:0.7rem; color:rgba(255,255,255,0.6); margin-bottom:0.5rem; text-transform:uppercase; font-weight:600; letter-spacing:0.05em;">Email</label>
-        <input type="email" id="forgotEmail" style="width:100%; padding:0.85rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:1rem;" onkeydown="if(event.key==='Enter') submitForgot()" onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-      </div>
-      <p id="forgotMsg" style="font-size:0.85rem; display:none; margin-bottom:1rem; text-align:center;"></p>
-      <button onclick="submitForgot()" class="heroSecondary" style="width:100%; padding:1rem; border-radius:12px; color:#fff; font-size:1rem; font-weight:600; cursor:pointer;" data-i18n="send_reset_link">Send Reset Link</button>
-      <p style="text-align:center; margin-top:1.25rem; font-size:0.85rem;">
-        <a href="#" onclick="showLoginForm(); return false;" style="color:rgba(99,102,241,0.8); text-decoration:none;" data-i18n="back_to_login">← Back to login</a>
-      </p>
-    </div>
-
-    <!-- Reset password form -->
-    <div id="resetForm" style="display:none;">
-      <h2 style="text-align:center; font-size:1.5rem; font-weight:700; margin-bottom:0.5rem; color:#fff;" data-i18n="reset_title">New Password</h2>
-      <p style="text-align:center; color:rgba(255,255,255,0.5); margin-bottom:1.5rem; font-size:0.9rem;" data-i18n="reset_subtitle">Enter your new password below.</p>
-      <div style="margin-bottom:1rem;">
-        <label style="display:block; font-size:0.7rem; color:rgba(255,255,255,0.6); margin-bottom:0.5rem; text-transform:uppercase; font-weight:600; letter-spacing:0.05em;" data-i18n="lbl_password">Password</label>
-        <input type="password" id="resetPass" style="width:100%; padding:0.85rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:1rem;" onkeydown="if(event.key==='Enter') submitReset()" onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-      </div>
-      <p id="resetMsg" style="font-size:0.85rem; display:none; margin-bottom:1rem; text-align:center;"></p>
-      <button onclick="submitReset()" class="heroSecondary" style="width:100%; padding:1rem; border-radius:12px; color:#fff; font-size:1rem; font-weight:600; cursor:pointer;" data-i18n="reset_password_btn">Set New Password</button>
+<!-- Task Detail Content Guide (Premium Split Layout) -->
+<div class="bl-modal-overlay" id="taskDetailModal" style="z-index: 2000; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); background: rgba(0,0,0,0.8);">
+  <div class="bl-modal-content" style="width:calc(100% - 40px); max-width:1200px; padding:0; background:var(--card-bg); border:1px solid var(--mist); border-radius:32px; overflow:hidden; position:relative;">
+    <button onclick="closeModal('taskDetailModal')" style="position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(0,0,0,0.3); backdrop-filter:blur(8px); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 40px; height: 40px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 10;">&#x2715;</button>
+    <div id="taskDetailContent" style="max-height:90vh; overflow:auto;">
+      <!-- Populated by showTaskDetail() -->
     </div>
   </div>
 </div>
@@ -1533,6 +1846,72 @@
   </div>
 </div>
 
+<!-- PREMIUM TASK DETAILS MODAL (Site of the Month Design) -->
+<div id="taskDetailsModal" class="bl-modal-overlay" style="z-index: 2000; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); background: rgba(0,0,0,0.8);">
+  <div class="bl-modal-content" style="max-width: 800px; padding: 0; background: var(--card-bg); border: 1px solid var(--mist); border-radius: 32px; overflow: hidden; position: relative;">
+    
+    <!-- Hero Header -->
+    <div style="padding: 4rem 3.5rem 3.5rem; background: linear-gradient(180deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%); position: relative;">
+      <button onclick="closeModal('taskDetailsModal')" style="position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--mist); border-radius: 50%; width: 40px; height: 40px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 10;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: var(--accent-main); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+        <div style="width: 32px; height: 1px; background: var(--accent-main);"></div>
+        Operational Dossier
+      </div>
+      <h2 id="tdTitle" style="font-family: 'Oswald', sans-serif; font-size: 3.5rem; font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--text-primary); margin: 0; letter-spacing: -0.02em;">Task Details</h2>
+      <div id="tdPhase" style="margin-top: 1rem; font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.25rem; color: var(--text-secondary);">Phase association</div>
+    </div>
+
+    <!-- Details Grid -->
+    <div style="padding: 0 3.5rem 4rem; display: grid; grid-template-columns: 1.5fr 1fr; gap: 4rem;">
+      <div style="display: flex; flex-direction: column; gap: 2.5rem;">
+        <div>
+          <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 1rem; display: block;">Strategic Brief</label>
+          <p id="tdNotes" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; line-height: 1.7; color: var(--text-primary); margin: 0;">Task summary and operational instructions will appear here.</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div>
+            <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block;">Temporal Range</label>
+            <div id="tdDates" style="font-family: 'Oswald', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">—</div>
+          </div>
+          <div>
+            <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block;">Capital Allocation</label>
+            <div id="tdCost" style="font-family: 'Oswald', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--accent-main);">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.015); border: 1px solid var(--mist); border-radius: 20px; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
+        <div>
+          <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block;">Assigned Operator</label>
+          <div id="tdWorker" style="display: flex; align-items: center; gap: 0.75rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; color: var(--text-primary);">
+            <div style="width: 32px; height: 32px; border-radius: 10px; background: var(--frost); display: flex; align-items: center; justify-content: center;">👷</div>
+            <span>No operator linked</span>
+          </div>
+        </div>
+        
+        <div>
+          <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block;">Priority Tier</label>
+          <div id="tdPriority" style="display: inline-block; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Normal</div>
+        </div>
+        
+        <div>
+          <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 0.75rem; display: block;">Operational Status</label>
+          <div id="tdStatus" style="display: inline-block; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Pending</div>
+        </div>
+
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+           <button id="tdEditBtn" class="bl-btn bl-btn-primary" style="width: 100%; padding: 0.85rem; border-radius: 12px; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.1em;">Edit Execution</button>
+           <button id="tdDoneBtn" class="bl-btn" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--mist); background: var(--frost); font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.1em;">Mark as Reconciled</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PDF Print View -->
 <div id="pdfPrintView" style="display:none;">
   <div id="pdfContent"></div>
@@ -1550,184 +1929,38 @@ const API            = '/api/project/' + currentProject;
 </script>
 
 <!-- Modules (load order matters — each depends on globals from prior files) -->
-<script src="js/i18n.js?v=5"></script>
-<script src="js/task-data.js?v=1"></script>
-<script src="js/core.js?v=1"></script>
-<script src="js/renders.js?v=3"></script>
-<script src="js/gantt.js?v=4"></script>
-<script src="js/calendar.js?v=2"></script>
-<script src="js/crud.js?v=1"></script>
-<script src="js/payments.js?v=1"></script>
-<script src="js/materials.js?v=1"></script>
-<script src="js/share.js?v=1"></script>
-<script src="js/templates.js?v=6"></script>
-<script src="js/export.js?v=3"></script>
-<script src="js/mindmap.js?v=1"></script>
+<script src="js/auth-logic.js" defer></script>
+<script src="js/i18n.js?v=5" defer></script>
+<script src="js/task-data.js?v=1" defer></script>
+<script src="js/core.js?v=1" defer></script>
+<script src="js/renders_v5.js?v=10" defer></script>
+<script src="js/gantt.js?v=6" defer></script>
+<script src="js/calendar.js?v=4" defer></script>
+<script src="js/crud.js?v=2" defer></script>
+<script src="js/payments.js?v=2" defer></script>
+<script src="js/materials.js?v=2" defer></script>
+<script src="js/share.js?v=1" defer></script>
+<script src="js/templates.js?v=6" defer></script>
+<script src="js/export.js?v=3" defer></script>
+<script src="js/mindmap.js?v=1" defer></script>
 
 <script>
 
-    // Forgot / Reset password
-    function showForgotForm() {
-      document.getElementById('loginForm').style.display   = 'none';
-      document.getElementById('forgotForm').style.display  = 'block';
-      document.getElementById('resetForm').style.display   = 'none';
-    }
-    function showLoginForm() {
-      document.getElementById('loginForm').style.display   = 'block';
-      document.getElementById('forgotForm').style.display  = 'none';
-      document.getElementById('resetForm').style.display   = 'none';
-    }
-    function submitForgot() {
-      const email = document.getElementById('forgotEmail').value.trim();
-      const msg   = document.getElementById('forgotMsg');
-      if (!email) return;
-      fetch('/api/auth/forgot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      }).then(r => r.json()).then(d => {
-        msg.style.display = 'block';
-        if (d.reset_url) {
-          msg.style.color = 'rgba(255,255,255,0.7)';
-          msg.innerHTML = 'Reset link (no email configured):<br><a href="' + d.reset_url + '" style="color:#6366f1; word-break:break-all;">' + d.reset_url + '</a>';
-        } else {
-          msg.style.color = '#4ade80';
-          msg.textContent = 'If that email exists, a reset link has been sent.';
-        }
-      }).catch(() => {
-        msg.style.display = 'block';
-        msg.style.color = '#ff4b4b';
-        msg.textContent = 'Something went wrong. Please try again.';
-      });
-    }
-    function submitReset() {
-      const token = new URLSearchParams(window.location.search).get('reset');
-      const pass  = document.getElementById('resetPass').value.trim();
-      const msg   = document.getElementById('resetMsg');
-      if (!pass || pass.length < 8) {
-        msg.style.display = 'block'; msg.style.color = '#ff4b4b';
-        msg.textContent = 'Password must be at least 8 characters.';
-        return;
-      }
-      fetch('/api/auth/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password: pass })
-      }).then(r => r.json()).then(d => {
-        if (d.ok) {
-          msg.style.display = 'block'; msg.style.color = '#4ade80';
-          msg.textContent = 'Password updated! You can now log in.';
-          setTimeout(() => {
-            window.history.replaceState({}, '', window.location.pathname);
-            showLoginForm();
-          }, 2000);
-        } else {
-          msg.style.display = 'block'; msg.style.color = '#ff4b4b';
-          msg.textContent = d.error || 'Something went wrong.';
-        }
-      });
-    }
-    // Check for reset token in URL on load
-    (function() {
-      const token = new URLSearchParams(window.location.search).get('reset');
-      if (token) {
-        document.addEventListener('DOMContentLoaded', () => {
-          document.getElementById('loginOverlay').style.display = 'flex';
-          document.getElementById('loginForm').style.display  = 'none';
-          document.getElementById('resetForm').style.display  = 'block';
-        });
-      }
-    })();
-
-    // Client Authentication Logic
-    function attemptLogin() {
-      const u = document.getElementById('loginUser').value.trim();
-      const p = document.getElementById('loginPass').value.trim();
-      if (!u || !p) {
-        document.getElementById('loginError').style.display = 'block';
-        return;
-      }
-      fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: u, password: p })
-      })
-      .then(r => r.json())
-      .then(d => {
-        if (d.ok) {
-          localStorage.setItem('clientLoggedIn', 'true');
-          localStorage.setItem('userEmail', u);
-          localStorage.setItem('userToken', d.token);
-          const uid = d.user?.id || '';
-          localStorage.setItem('userId', uid);
-          if (d.user && d.user.name) localStorage.setItem('userName', d.user.name);
-
-          // Registered users (not hardcoded admin/client) get their own project
-          if (uid && uid !== 'admin' && uid !== 'client') {
-            const projectKey = 'user_project_' + uid;
-            const existingPid = localStorage.getItem(projectKey);
-            if (existingPid) {
-              window.location.href = '/planner.html?project=' + existingPid;
-            } else {
-              fetch('/api/projects', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + d.token },
-                body: JSON.stringify({ title: 'My Renovation' })
-              }).then(r => r.json()).then(pj => {
-                if (pj.ok) {
-                  localStorage.setItem(projectKey, pj.project.id);
-                  window.location.href = '/planner.html?project=' + pj.project.id;
-                }
-              });
-            }
-            return;
-          }
-
-          document.getElementById('loginOverlay').style.display = 'none';
-          document.getElementById('loginError').style.display = 'none';
-
-          // Reset onboarding state to show Step 1 Primary
-          document.getElementById('onboardStep1').style.display = 'block';
-          document.getElementById('onboardStep1_Primary').style.display = 'block';
-          document.getElementById('onboardStep1_Paid').style.display = 'none';
-          document.getElementById('onboardStep2').style.display = 'none';
-
-          // Force show onboarding
-          document.getElementById('onboardOverlay').classList.add('active');
-          if (typeof showOnboarding === 'function') showOnboarding();
-        } else {
-          document.getElementById('loginError').style.display = 'block';
-        }
-      })
-      .catch(() => {
-        document.getElementById('loginError').style.display = 'block';
-      });
-    }
-
-    function attemptLogout() {
-      localStorage.removeItem('clientLoggedIn');
-      localStorage.removeItem('userEmail');
-      localStorage.removeItem('userToken');
-      localStorage.removeItem('userName');
-      window.location.href = 'index.html';
-    }
-
+    // Auth UI helpers, Logout, and Reset are now handled by auth-logic.js
     // Sidebar collapse toggle
     function toggleSidebarCollapse() {
       const sidebar = document.getElementById('blSidebar');
-      const main = document.getElementById('blMain');
+      const main = document.getElementById('blContent'); // Corrected from blMain
       const arrow = document.getElementById('sidebarArrow');
       const isCollapsed = sidebar.classList.contains('bl-sidebar-collapsed');
 
       if (isCollapsed) {
-        // Expand
         sidebar.classList.remove('bl-sidebar-collapsed');
         if (main) main.classList.remove('bl-main-expanded');
         sidebar.style.width = '200px';
         if (arrow) arrow.style.transform = 'rotate(0deg)';
         localStorage.setItem('sidebar_collapsed', 'false');
       } else {
-        // Collapse
         sidebar.classList.add('bl-sidebar-collapsed');
         if (main) main.classList.add('bl-main-expanded');
         sidebar.style.width = '60px';
@@ -1739,12 +1972,11 @@ const API            = '/api/project/' + currentProject;
     // Restore sidebar state on load
     function restoreSidebarState() {
       const sidebar = document.getElementById('blSidebar');
-      const main = document.getElementById('blMain');
+      const main = document.getElementById('blContent');
       const arrow = document.getElementById('sidebarArrow');
       
       if (sidebar && main) {
         const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-        
         if (isCollapsed) {
           sidebar.classList.add('bl-sidebar-collapsed');
           main.classList.add('bl-main-expanded');
@@ -1754,7 +1986,6 @@ const API            = '/api/project/' + currentProject;
           sidebar.style.width = '200px';
           if (arrow) arrow.style.transform = 'rotate(0deg)';
         }
-        main.style.boxSizing = 'border-box';
       }
     }
 
@@ -1763,22 +1994,73 @@ const API            = '/api/project/' + currentProject;
       restoreSidebarState();
 
       if (localStorage.getItem('clientLoggedIn') !== 'true') {
-        // Not logged in — show login overlay
-        document.getElementById('loginOverlay').style.display = 'flex';
+        // Not logged in — show login overlay (mandatory)
+        openAuthOverlay({ isClosable: false });
       } else {
-        // Registered users: redirect to their own project if on default
+        // Show admin dashboard link if user is admin
+        if (localStorage.getItem('userId') === 'admin') {
+          const navAdmin = document.getElementById('nav-admin');
+          if (navAdmin) navAdmin.style.display = 'flex';
+        }
+
+        // Registered users: redirect to their own project or create one if missing
         const uid = localStorage.getItem('userId');
+        const token = localStorage.getItem('userToken');
         if (uid && uid !== 'admin' && uid !== 'client' && currentProject === 'default') {
-          const pid = localStorage.getItem('user_project_' + uid);
-          if (pid) { window.location.href = '/planner.html?project=' + pid; return; }
+          const projectKey = 'user_project_' + uid;
+          const pid = localStorage.getItem(projectKey);
+          if (pid) { 
+            window.location.href = 'index.html?project=' + pid; 
+            return; 
+          } else if (token) {
+            fetch('/api/projects', {
+              headers: { 'Authorization': 'Bearer ' + token }
+            }).then(r => r.json()).then(data => {
+              if (data.ok && data.projects && data.projects.length > 0) {
+                // Use the first (or most recent) existing project
+                const existingPid = data.projects[0].id;
+                localStorage.setItem(projectKey, existingPid);
+                window.location.href = 'index.html?project=' + existingPid;
+              } else {
+                // No projects exist, create a new one
+                fetch('/api/projects', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                  body: JSON.stringify({ title: 'My Renovation' })
+                }).then(r => r.json()).then(pj => {
+                  if (pj.ok) {
+                    localStorage.setItem(projectKey, pj.project.id);
+                    window.location.href = 'index.html?project=' + pj.project.id;
+                  }
+                });
+              }
+            });
+            return;
+          }
         }
       }
 
-      // Reveal page only after auth check (prevents flash of content)
-      document.body.style.visibility = 'visible';
+      // Check for reset token in URL
+      const resetToken = new URLSearchParams(window.location.search).get('reset');
+      if (resetToken) {
+        openAuthOverlay({ isClosable: false });
+        if (typeof showResetForm === 'function') showResetForm();
+      }
 
-      // Always init app (loads data; login overlay covers UI if not authenticated)
-      if (typeof init === 'function') init();
+      const revealBody = () => {
+        if (document.body.style.visibility !== 'visible') {
+          document.body.style.visibility = 'visible';
+          if (typeof init === 'function') init();
+        }
+      };
+
+      if (document.fonts) {
+        document.fonts.ready.then(revealBody);
+        // Fail-safe: Reveal after 1.5s even if fonts hang
+        setTimeout(revealBody, 1500);
+      } else {
+        revealBody();
+      }
     });
 </script>
 
@@ -1804,10 +2086,18 @@ function closeMobileSidebar() {
   document.getElementById('blSidebarOverlay').classList.remove('active');
   document.getElementById('blMenuToggle').classList.remove('open');
 }
-/* Auto-close sidebar when a nav-item is tapped on mobile */
+/* Auto-close sidebar on mobile + sync bottom nav (combined handler) */
 document.querySelectorAll('.bl-nav-item').forEach(a => {
-  a.addEventListener('click', () => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
     if (window.innerWidth < 768) closeMobileSidebar();
+    const tab = a.dataset.tab;
+    if (tab) {
+      if (typeof switchTab === 'function') switchTab(tab);
+      document.querySelectorAll('#blBottomNav .bl-bottom-nav-item[data-tab]').forEach(i => {
+        i.classList.toggle('active', i.dataset.tab === tab);
+      });
+    }
   });
 });
 /* ── Bottom nav active state ── */
@@ -1815,25 +2105,7 @@ function setBottomNavActive(el) {
   document.querySelectorAll('#blBottomNav .bl-bottom-nav-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
 }
-/* Sync bottom nav when sidebar nav is used */
-document.querySelectorAll('.bl-nav-item').forEach(a => {
-  a.addEventListener('click', () => {
-    const tab = a.dataset.tab;
-    if (tab) {
-      document.querySelectorAll('#blBottomNav .bl-bottom-nav-item[data-tab]').forEach(i => {
-        i.classList.toggle('active', i.dataset.tab === tab);
-      });
-    }
-  });
-});
 
 </script>
-<!-- Theme dropdown: rendered as direct body child to escape overflow:hidden stacking contexts -->
-<div class="bl-theme-menu" id="themeMenu">
-  <button class="bl-theme-menu-item" data-theme-pick="v2-dark"  onclick="setTheme('v2-dark')"><span class="bl-theme-menu-dot" style="background:#0D1117;border-color:#6366F1;"></span>Indigo Dark</button>
-  <button class="bl-theme-menu-item" data-theme-pick="v2-light" onclick="setTheme('v2-light')"><span class="bl-theme-menu-dot" style="background:#F1F5F9;border-color:#6366F1;"></span>Indigo Light</button>
-  <button class="bl-theme-menu-item" data-theme-pick="v1-dark"  onclick="setTheme('v1-dark')"><span class="bl-theme-menu-dot" style="background:#1c1c1e;border-color:#636366;"></span>Classic Dark</button>
-  <button class="bl-theme-menu-item" data-theme-pick="v1-light" onclick="setTheme('v1-light')"><span class="bl-theme-menu-dot" style="background:#f5f5f5;border-color:#c7c7cc;"></span>Classic Light</button>
-</div>
 </body>
 </html>

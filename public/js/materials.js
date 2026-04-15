@@ -13,63 +13,92 @@ function filterMaterials(filter) {
 function renderMaterials() {
   const materials = appData.materials || [];
   const total = materials.reduce((s,m) => s + (Number(m.quantity||0) * Number(m.price||0)), 0);
-  document.getElementById('matTotalCost').textContent = fmt(total);
-  document.getElementById('matOrdered').textContent   = materials.filter(m => m.status==='ordered').length;
-  document.getElementById('matDelivered').textContent = materials.filter(m => m.status==='delivered').length;
-  document.getElementById('matNeeded').textContent    = materials.filter(m => m.status==='needed').length;
+  
+  const elTotal = document.getElementById('matTotalCost');
+  if (elTotal) elTotal.textContent = fmt(total);
+  
+  const elOrdered = document.getElementById('matOrdered');
+  if (elOrdered) elOrdered.textContent = materials.filter(m => m.status==='ordered').length;
+  
+  const elDelivered = document.getElementById('matDelivered');
+  if (elDelivered) elDelivered.textContent = materials.filter(m => m.status==='delivered').length;
+  
+  const elNeeded = document.getElementById('matNeeded');
+  if (elNeeded) elNeeded.textContent = materials.filter(m => m.status==='needed').length;
 
   const phaseSelect = document.getElementById('materialPhase');
-  if (phaseSelect) phaseSelect.innerHTML = `<option value="">—</option>` + appData.phases.map(ph => `<option value="${ph.id}">${esc(phaseTitle(ph))}</option>`).join('');
+  if (phaseSelect) {
+    phaseSelect.innerHTML = `<option value="">—</option>` + 
+      appData.phases.map(ph => `<option value="${ph.id}">${esc(phaseTitle(ph))}</option>`).join('');
+  }
 
   const filtered = matFilter === 'all' ? materials : materials.filter(m => m.status === matFilter);
-  const tbody = document.getElementById('materialsList');
+  const listEl = document.getElementById('materialsList');
+  if (!listEl) return;
+
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="9" style="padding:3rem 2rem;text-align:center;color:var(--text-secondary); opacity:0.6;">${t('mat_no_results')}</td></tr>`;
+    listEl.innerHTML = `<tr><td colspan="9" style="padding:5rem 2rem; text-align:center; color:var(--text-secondary); font-family:'Plus Jakarta Sans',sans-serif; opacity:0.6;">${t('mat_no_results')}</td></tr>`;
     return;
   }
+
   const statusLabel = {needed: t('mat_status_needed'), ordered: t('mat_status_ordered'), delivered: t('mat_status_delivered'), installed: t('mat_status_installed')};
-  tbody.innerHTML = filtered.map(m => {
+
+  listEl.innerHTML = filtered.map(m => {
     const ph = appData.phases.find(x => x.id === m.phase_id);
     const totalCost = Number(m.quantity||0) * Number(m.price||0);
     const statusColor = MAT_STATUS_COLORS[m.status] || 'var(--text-secondary)';
-    let rowStyle = `border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.875rem; color:var(--text-primary); transition: background 0.2s;`;
-    if (m.status === 'installed') rowStyle += ` background: rgba(34, 197, 94, 0.1);`;
-    else if (m.status === 'delivered') rowStyle += ` background: rgba(10, 132, 255, 0.1);`;
-    else if (m.status === 'ordered') rowStyle += ` background: rgba(255, 255, 255, 0.08);`;
 
-    return `<tr style="${rowStyle}">
-      <td style="padding:1rem; font-weight:700;">${esc(m.name)}</td>
-      <td style="padding:1rem; color:var(--text-secondary); font-size:0.75rem;">${ph ? `<span onclick="editPhase('${ph.id}')" style="cursor:pointer; text-decoration:none; border-bottom:1px solid var(--mist);" onmouseover="this.style.color='var(--accent-main)';this.style.borderColor='var(--accent-main)'" onmouseout="this.style.color='var(--text-secondary)';this.style.borderColor='var(--mist)'">${esc(phaseTitle(ph))}</span>` : '—'}</td>
-      <td style="padding:1rem 0.5rem; text-align:right; font-family:'JetBrains Mono', monospace;">${m.quantity} ${esc(m.unit||'')}</td>
-      <td style="padding:1rem 0.5rem; text-align:right; font-family:'JetBrains Mono', monospace;">${fmt(m.price)}</td>
-      <td style="padding:1rem 0.5rem; text-align:right; font-weight:700; font-family:'JetBrains Mono', monospace;">${fmt(totalCost)}</td>
-      <td style="padding:1rem 0.5rem; color:var(--text-secondary);">${esc(m.store||'—')}</td>
-      <td style="padding:1rem 0.5rem; color:var(--text-secondary); font-family:'JetBrains Mono', monospace; font-size:0.75rem;">${m.order_by_date||'—'}</td>
-      <td style="padding:1rem 0.5rem;">
-        <select onchange="changeMaterialStatus('${esc(m.id)}',this.value)" style="font-size:0.7rem; border:1px solid ${statusColor}44; border-radius:var(--radius-sm); padding:4px 8px; color:${statusColor}; background:rgba(255,255,255,0.04); cursor:pointer; outline:none; text-transform:uppercase; font-weight:700;">
-          ${['needed','ordered','delivered','installed'].map(s => `<option value="${s}" ${m.status===s?'selected':''}>${statusLabel[s]||s}</option>`).join('')}
-        </select>
-      </td>
-      <td style="padding:1rem 0.5rem; text-align:right;">
-        <div style="display:flex; gap:8px; justify-content:flex-end;">
-          <button onclick="editMaterial('${esc(m.id)}')" class="bl-edit-btn" style="opacity:0.6;"><i data-lucide="edit-2" style="width:14px;height:14px;"></i></button>
-          <button onclick="deleteMaterial('${esc(m.id)}')" class="bl-edit-btn" style="opacity:0.6; color:#ff3b30;"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
-        </div>
-      </td>
-    </tr>`;
+    return `
+      <tr style="border-bottom: 1px solid var(--mist); transition: background 0.2s; position: relative;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+        <td style="padding: 1.5rem 1rem;">
+          <div style="font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 0.25rem;">${esc(m.name)}</div>
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); opacity: 0.6;">REF: ${m.id.substring(0,6)}</div>
+        </td>
+        <td style="padding: 1.5rem 1rem;">
+          ${ph ? `
+            <div style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.35rem 0.75rem; border-radius:6px; background:var(--frost); border:1px solid var(--mist); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.7rem; font-weight:700; color:var(--text-primary); cursor:pointer;" onclick="editPhase('${ph.id}')">
+              <span style="width:6px; height:6px; border-radius:50%; background:var(--accent-main);"></span>
+              ${esc(phaseTitle(ph))}
+            </div>
+          ` : '<span style="color:var(--text-secondary); opacity:0.3;">—</span>'}
+        </td>
+        <td style="padding: 1.5rem 1rem; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); font-weight: 600;">
+          ${m.quantity} <span style="font-size: 0.65rem; opacity: 0.5;">${esc(m.unit||'kom')}</span>
+        </td>
+        <td style="padding: 1.5rem 1rem; text-align: right; font-family: 'Oswald', sans-serif; font-size: 1rem; color: var(--text-primary);">
+          ${fmt(m.price)}
+        </td>
+        <td style="padding: 1.5rem 1rem; text-align: right; font-family: 'Oswald', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--accent-main);">
+          ${fmt(totalCost)}
+        </td>
+        <td style="padding: 1.5rem 1rem; text-align: center;">
+          <select onchange="changeMaterialStatus('${esc(m.id)}',this.value)" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.6rem; font-weight:800; text-transform:uppercase; border:1.5px solid ${statusColor}44; border-radius:8px; padding:6px 12px; color:${statusColor}; background:${statusColor}10; cursor:pointer; outline:none; letter-spacing:0.05em;">
+            ${['needed','ordered','delivered','installed'].map(s => `<option value="${s}" ${m.status===s?'selected':''}>${(statusLabel[s]||s).toUpperCase()}</option>`).join('')}
+          </select>
+        </td>
+        <td style="padding: 1.5rem 1rem; text-align: right;">
+          <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+            <button class="bl-icon-btn" onclick="editMaterial('${esc(m.id)}')" style="width:32px; height:32px; border-radius:50%; background:var(--frost); border:1px solid var(--mist); color:var(--text-secondary);"><i data-lucide="edit-3" style="width:14px; height:14px;"></i></button>
+            <button class="bl-icon-btn bl-icon-btn-danger" onclick="deleteMaterial('${esc(m.id)}')" style="width:32px; height:32px; border-radius:50%; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2); color:#ef4444;"><i data-lucide="trash-2" style="width:14px; height:14px;"></i></button>
+          </div>
+        </td>
+      </tr>
+    `;
   }).join('');
   if (window.lucide) lucide.createIcons();
 }
 
-document.getElementById('addMaterialBtn').addEventListener('click', () => {
+function openAddMaterialModal() {
   document.getElementById('materialId').value = '';
-  document.getElementById('materialModalTitle').textContent = t('add_material_title');
+  const titleEl = document.getElementById('materialModalTitle');
+  if (titleEl) titleEl.textContent = t('add_material_title');
   document.getElementById('materialForm').reset();
   document.getElementById('materialUnit').value = 'kom';
   document.getElementById('materialStatus').value = 'needed';
   document.getElementById('materialPhase').innerHTML = `<option value="">—</option>` + appData.phases.map(ph => `<option value="${ph.id}">${esc(phaseTitle(ph))}</option>`).join('');
   openModal('materialModal');
-});
+}
+document.getElementById('addMaterialBtn')?.addEventListener('click', openAddMaterialModal);
 
 document.getElementById('materialForm').addEventListener('submit', async e => {
   e.preventDefault();

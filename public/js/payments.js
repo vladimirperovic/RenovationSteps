@@ -73,16 +73,17 @@ function renderPayments() {
 }
 
 // Add safely
+function openAddPaymentModal() {
+  document.getElementById('paymentId').value = '';
+  document.getElementById('paymentModalTitle').textContent = t('add_payment_title');
+  document.getElementById('paymentForm').reset();
+  document.getElementById('paymentPhase').innerHTML = `<option value="">—</option>` + appData.phases.map(ph => `<option value="${ph.id}">${esc(phaseTitle(ph))}</option>`).join('');
+  document.getElementById('paymentWorker').innerHTML = `<option value="">—</option>` + appData.workers.map(w => `<option value="${w.id}">${esc(w.name)}</option>`).join('');
+  openModal('paymentModal');
+}
 const addPaymentBtn = document.getElementById('addPaymentBtn');
 if (addPaymentBtn) {
-    addPaymentBtn.addEventListener('click', () => {
-      document.getElementById('paymentId').value = '';
-      document.getElementById('paymentModalTitle').textContent = t('add_payment_title');
-      document.getElementById('paymentForm').reset();
-      document.getElementById('paymentPhase').innerHTML = `<option value="">—</option>` + appData.phases.map(ph => `<option value="${ph.id}">${esc(phaseTitle(ph))}</option>`).join('');
-      document.getElementById('paymentWorker').innerHTML = `<option value="">—</option>` + appData.workers.map(w => `<option value="${w.id}">${esc(w.name)}</option>`).join('');
-      openModal('paymentModal');
-    });
+    addPaymentBtn.addEventListener('click', openAddPaymentModal);
 }
 
 const paymentForm = document.getElementById('paymentForm');

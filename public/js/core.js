@@ -3,7 +3,7 @@
 // =============================================
 // NOTE: CSRF and API constants are declared inline in planner.php
 
-// currentProject is now defined globally in planner.html
+// currentProject is now defined globally in index.html
 
 let appData  = { plan:{}, phases:[], expenses:[], workers:[], tasks:[], logs:[], punch_list:[], changes:[] };
 let IS_ADMIN = false;
@@ -23,9 +23,12 @@ async function api(action, body = {}) {
     });
     if (!r.ok) {
         console.error('HTTP error:', r.status);
-        return { ok: false, error: 'HTTP ' + r.status };
+        const errJson = await r.json().catch(() => ({}));
+        throw new Error(errJson.error || ('HTTP ' + r.status));
     }
-    return await r.json();
+    const res = await r.json();
+    if (res.ok === false) throw new Error(res.error || 'Server error');
+    return res;
   } catch (e) {
     console.error(`[API Error] Action ${action}:`, e);
     return { ok: false, error: e.message };
@@ -37,10 +40,25 @@ async function init() {
     const json = await api('get_all');
     console.log('API response:', json);
     if (json.ok) {
-      appData  = json.data;
-      console.log('appData loaded:', appData.phases?.length, 'phases,', appData.tasks?.length, 'tasks');
+      // Ensure all expected arrays exist to prevent reduce/map crashes
+      const d = json.data || {};
+      appData = {
+        plan: d.plan || {},
+        phases: Array.isArray(d.phases) ? d.phases : [],
+        expenses: Array.isArray(d.expenses) ? d.expenses : [],
+        workers: Array.isArray(d.workers) ? d.workers : [],
+        tasks: Array.isArray(d.tasks) ? d.tasks : [],
+        logs: Array.isArray(d.logs) ? d.logs : [],
+        punch_list: Array.isArray(d.punch_list) ? d.punch_list : [],
+        changes: Array.isArray(d.changes) ? d.changes : [],
+        materials: Array.isArray(d.materials) ? d.materials : [],
+        payments: Array.isArray(d.payments) ? d.payments : []
+      };
+
+      console.log('appData loaded:', appData.phases.length, 'phases,', appData.tasks.length, 'tasks');
       IS_ADMIN = json.is_admin === true;
       CAN_USE_TEMPLATES = json.can_use_templates === true;
+      
       // show/hide admin template banner & nav link
       const banner = document.getElementById('adminTemplateBanner');
       if (banner) banner.style.display = IS_ADMIN ? 'block' : 'none';
@@ -54,7 +72,18 @@ async function init() {
 
       // First-time user check: show onboarding if no phases and no tasks exist
       if (!IS_ADMIN && appData.phases.length === 0 && appData.tasks.length === 0 && !localStorage.getItem('planner_onboard_done_' + currentProject)) {
-        showOnboarding();
+        // Double check: if user has other projects, skip onboarding
+        try {
+          const projList = await api('get_my_projects');
+          if (projList.ok && projList.projects && projList.projects.length > 1) {
+            console.log('User has existing projects, skipping auto-onboard.');
+            localStorage.setItem('planner_onboard_done_' + currentProject, 'true');
+          } else {
+            showOnboarding();
+          }
+        } catch(e) { 
+          showOnboarding(); // Fallback to show it if API fails
+        }
       }
 
       render();
@@ -70,18 +99,26 @@ async function init() {
 }
 
 function render() {
-  renderOverview();
-  renderPhases();
-  renderFinances();
-  renderWorkers();
-  renderTasks();
-  renderPunchList();
-  renderMaterials();
-  renderSettings();
-  renderGantt();
-  renderCalendar();
-  loadProjectList();
-  if (window.lucide) lucide.createIcons();
+  const tryR = (fn, name) => { 
+    try { if(typeof fn === 'function') fn(); else console.error(`Render fail: ${name} is not a function`); } 
+    catch(e) { console.error(`Render fail: ${name}`, e); } 
+  };
+  
+  tryR(renderOverview, 'Overview');
+  tryR(renderPhases, 'Phases');
+  tryR(renderFinances, 'Finances');
+  tryR(renderWorkers, 'Workers');
+  tryR(renderTasks, 'Tasks');
+  tryR(renderPunchList, 'PunchList');
+  tryR(renderMaterials, 'Materials');
+  tryR(renderSettings, 'Settings');
+  tryR(renderGantt, 'Gantt');
+  tryR(renderCalendar, 'Calendar');
+  tryR(loadProjectList, 'ProjectList');
+  
+  if (window.lucide) {
+    try { lucide.createIcons(); } catch(e) {}
+  }
 }
 
 async function loadProjectList() {

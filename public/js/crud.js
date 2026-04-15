@@ -55,7 +55,11 @@ function switchTab(tabId) {
       if (window.fullCal) fullCal.updateSize();
     }, 50);
   }
+  
   // Re-render the active tab content
+  if (tabId === 'overview') {
+    renderOverview();
+  }
   if (tabId === 'phases') {
     renderPhases();
   }
@@ -73,6 +77,9 @@ function switchTab(tabId) {
   }
   if (tabId === 'map') {
     mmInitMap();
+  }
+  if (tabId === 'settings') {
+    renderSettings();
   }
 }
 
@@ -92,6 +99,26 @@ document.querySelectorAll('.bl-nav-item').forEach(a => {
 document.getElementById('blMenuToggle').addEventListener('click', () => document.getElementById('blSidebar').classList.add('open'));
 document.getElementById('blSidebarClose').addEventListener('click', closeSidebar);
 function closeSidebar() { document.getElementById('blSidebar').classList.remove('open'); }
+
+function updateSelectColor(el) {
+  if (!el) return;
+  if (el.value === 'in_progress' || el.value === 'active') {
+    el.style.setProperty('background-color', 'rgba(10, 132, 255, 0.25)', 'important');
+    el.style.setProperty('color', '#0a84ff', 'important');
+    el.style.setProperty('border-color', '#0a84ff', 'important');
+    el.style.setProperty('border-width', '1.5px', 'important');
+  } else if (el.value === 'done') {
+    el.style.setProperty('background-color', 'rgba(16, 185, 129, 0.25)', 'important');
+    el.style.setProperty('color', '#10b981', 'important');
+    el.style.setProperty('border-color', '#10b981', 'important');
+    el.style.setProperty('border-width', '1.5px', 'important');
+  } else {
+    el.style.backgroundColor = 'var(--frost)';
+    el.style.color = 'var(--text-primary)';
+    el.style.borderColor = 'var(--mist)';
+    el.style.borderWidth = '1px';
+  }
+}
 
 // ---- MODALS ----
 function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -139,6 +166,7 @@ function editPhase(id) {
   document.getElementById('progressVal').textContent = ph.progress||0;
   document.getElementById('phaseNotes').value = ph.notes||'';
   document.getElementById('phaseModalTitle').textContent = t('edit_phase_title');
+  updateSelectColor(document.getElementById('phaseStatus'));
   openModal('phaseModal');
 }
 
@@ -164,20 +192,62 @@ async function quickUpdatePhaseProgress(id, progress) {
 async function deletePhase(id) { if (!confirm(t('confirm_delete_phase'))) return; await api('delete_phase',{id}); await init(); toast(t('toast_phase_deleted'),'err'); }
 
 // ---- EXPENSES CRUD ----
-document.getElementById('addExpenseBtn').addEventListener('click', () => { document.getElementById('expenseForm').reset(); document.getElementById('expDate').valueAsDate = new Date(); openModal('expenseModal'); });
+function openAddExpenseModal() {
+  document.getElementById('expId').value = '';
+  document.getElementById('expenseForm').reset();
+  const dateEl = document.getElementById('expDate');
+  if (dateEl) dateEl.valueAsDate = new Date();
+  const titleEl = document.getElementById('expenseModalTitle');
+  if (titleEl) titleEl.textContent = t('add_expense_title');
+  openModal('expenseModal');
+}
+document.getElementById('addExpenseBtn')?.addEventListener('click', openAddExpenseModal);
 
 document.getElementById('expenseForm').addEventListener('submit', async e => {
   e.preventDefault();
+  const id = document.getElementById('expId').value;
+  const body = { 
+    desc:     document.getElementById('expDesc').value, 
+    category: document.getElementById('expCategory').value, 
+    amount:   document.getElementById('expAmount').value, 
+    date:     document.getElementById('expDate').value, 
+    paid:     document.getElementById('expPaid').checked ? '1' : '0' 
+  };
   try {
-    await api('add_expense', { desc: document.getElementById('expDesc').value, category: document.getElementById('expCategory').value, amount: document.getElementById('expAmount').value, date: document.getElementById('expDate').value, paid: document.getElementById('expPaid').checked ? '1' : '0' });
-    closeModal('expenseModal'); await init(); toast(t('toast_expense_added'));
+    if (id) {
+       body.id = id;
+       await api('update_expense', body);
+    } else {
+       await api('add_expense', body);
+    }
+    closeModal('expenseModal'); await init(); 
+    toast(id ? t('toast_expense_updated') : t('toast_expense_added'));
   } catch(err) { console.error(err); toast(t('err_generic'), 'err'); }
 });
+
+function editExpense(id) {
+  const ex = appData.expenses.find(x => x.id == id); if (!ex) return;
+  document.getElementById('expId').value = ex.id;
+  document.getElementById('expDesc').value = ex.desc || '';
+  document.getElementById('expCategory').value = ex.category || 'Other';
+  document.getElementById('expAmount').value = ex.amount || 0;
+  document.getElementById('expDate').value = ex.date || '';
+  document.getElementById('expPaid').checked = ex.paid == true || ex.paid == '1';
+  document.getElementById('expenseModalTitle').textContent = t('edit_expense_title');
+  openModal('expenseModal');
+}
 
 async function deleteExpense(id) { if (!confirm(t('confirm_delete_expense'))) return; await api('delete_expense',{id}); await init(); toast(t('toast_expense_deleted'),'err'); }
 
 // ---- WORKERS CRUD ----
-document.getElementById('addWorkerBtn').addEventListener('click', () => { document.getElementById('workerId').value=''; document.getElementById('workerModalTitle').textContent=t('add_worker_title'); document.getElementById('workerForm').reset(); openModal('workerModal'); });
+function openAddWorkerModal() {
+  document.getElementById('workerId').value = '';
+  const titleEl = document.getElementById('workerModalTitle');
+  if (titleEl) titleEl.textContent = t('add_worker_title');
+  document.getElementById('workerForm').reset();
+  openModal('workerModal');
+}
+document.getElementById('addWorkerBtn')?.addEventListener('click', openAddWorkerModal);
 
 document.getElementById('workerForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -215,6 +285,11 @@ function openAddTaskModal(phaseId) {
     if (sel) sel.value = phaseId;
   }
   document.getElementById('taskModalTitle').textContent = t('add_task_title') || 'Add Task'; 
+  const btn = document.getElementById('taskSubmitBtn');
+  if (btn) {
+    btn.textContent = t('btn_add') || 'Establish Intent';
+    btn.setAttribute('data-i18n', 'btn_add');
+  }
   openModal('taskModal'); 
 }
 document.getElementById('addTaskBtn').addEventListener('click', () => openAddTaskModal());
@@ -237,7 +312,13 @@ document.getElementById('taskForm').addEventListener('submit', async e => {
     end_date:   document.getElementById('taskEnd').value
   };
   try {
-    if (id) { body.id = id; await api('update_task', body); } else { await api('add_task', body); }
+    if (id) {
+      body.id = id;
+      await api('update_task', body);
+    } else {
+      await api('add_task', body);
+    }
+    if (body.phase_id) await syncPhaseProgress(body.phase_id);
     closeModal('taskModal'); await init();
     toast(id ? (t('toast_task_updated') || 'Task updated.') : t('toast_task_added'));
   } catch(err) { console.error(err); toast(t('err_generic'), 'err'); }
@@ -256,8 +337,31 @@ function editTask(id) {
   document.getElementById('taskStatus').value   = tk.status    || 'todo';
   document.getElementById('taskStart').value    = tk.start_date || '';
   document.getElementById('taskEnd').value      = tk.end_date   || '';
+  
+  const advAmt = document.getElementById('taskAdvanceAmount');
+  if (advAmt) advAmt.value = tk.advance_amount || '';
+  const advPaid = document.getElementById('taskAdvancePaid');
+  if (advPaid) advPaid.checked = tk.advance_paid === true || tk.advance_paid === '1';
+
   document.getElementById('taskModalTitle').textContent = t('edit_task_title') || 'Edit Task';
+  const btn = document.getElementById('taskSubmitBtn');
+  if (btn) {
+    btn.textContent = t('btn_save') || 'Sync Changes';
+    btn.setAttribute('data-i18n', 'btn_save');
+  }
+  updateSelectColor(document.getElementById('taskStatus'));
   openModal('taskModal');
+}
+async function updateTaskDateQuick(id, field, value) {
+  try {
+    const data = {}; data[field] = value;
+    await api('update_task', { id, ...data });
+    const tk = appData.tasks.find(x => x.id == id);
+    if (tk) tk[field] = value;
+    if (window.renderGantt) renderGantt();
+    if (window.renderCalendar) renderCalendar();
+    toast(t('toast_task_updated'));
+  } catch(e) { console.error(e); }
 }
 
 async function setTaskStatus(id, status) {
@@ -267,11 +371,27 @@ async function setTaskStatus(id, status) {
   if (tk) {
     tk.status = status;
     tk.done   = isDone;
+    if (tk.phase_id) await syncPhaseProgress(tk.phase_id);
   }
   renderOverview();
   renderTasks();
   renderPhases();
   if (window.renderGantt) renderGantt();
+}
+
+async function syncPhaseProgress(phaseId) {
+  if (!phaseId) return;
+  const tasks = (appData.tasks || []).filter(t => String(t.phase_id) === String(phaseId));
+  if (tasks.length === 0) return; 
+  
+  const doneCount = tasks.filter(t => t.status === 'done').length;
+  const newProgress = Math.round((doneCount / tasks.length) * 100);
+  
+  const ph = appData.phases.find(p => String(p.id) === String(phaseId));
+  if (ph) {
+    ph.progress = newProgress;
+    await api('update_phase', { id: phaseId, progress: newProgress });
+  }
 }
 
 async function setTaskPriority(id, priority) {
@@ -284,7 +404,15 @@ async function setTaskPriority(id, priority) {
   if (window.renderGantt) renderGantt();
 }
 
-async function deleteTask(id) { if (!confirm(t('confirm_delete_task'))) return; await api('delete_task',{id}); await init(); toast(t('toast_task_deleted'),'err'); }
+async function deleteTask(id) { 
+  if (!confirm(t('confirm_delete_task'))) return; 
+  const tk = appData.tasks.find(t => t.id === id);
+  const phaseId = tk ? tk.phase_id : null;
+  await api('delete_task',{id}); 
+  if (phaseId) await syncPhaseProgress(phaseId);
+  await init(); 
+  toast(t('toast_task_deleted'),'err'); 
+}
 
 // ---- SETTINGS ----
 // ---- NEW FEATURES CRUD ----
@@ -323,9 +451,26 @@ async function deletePunch(id) { if(!confirm(t('confirm_delete_punch')))return; 
 document.getElementById('settingsForm').addEventListener('submit', async e => {
   e.preventDefault();
   try {
-    await api('save_plan', { title: document.getElementById('sTitle').value, address: document.getElementById('sAddress').value, total_budget: document.getElementById('sBudget').value, exchange_rate: document.getElementById('sExRate').value, start_date: document.getElementById('sStart').value, end_date: document.getElementById('sEnd').value, notes: document.getElementById('sNotes').value });
-    await init(); toast(t('toast_settings_saved'));
-  } catch(err) { console.error(err); toast(t('err_generic'), 'err'); }
+    const payload = {
+      title:         document.getElementById('sTitle')?.value || '',
+      address:       document.getElementById('sAddress')?.value || '',
+      total_budget:  document.getElementById('sBudget')?.value || 0,
+      exchange_rate: document.getElementById('sExRate')?.value || 0,
+      start_date:    document.getElementById('sStart')?.value || '',
+      end_date:      document.getElementById('sEnd')?.value || '',
+      notes:         document.getElementById('sNotes')?.value || ''
+    };
+    const res = await api('save_plan', payload);
+    if (res && res.ok) {
+       await init(); 
+       toast(t('toast_settings_saved'));
+    } else {
+       toast(res?.error || t('err_generic'), 'err');
+    }
+  } catch(err) { 
+    console.error('Settings save failed:', err); 
+    toast(t('err_generic'), 'err'); 
+  }
 });
 
 // ---- ADMIN TEMPLATE SYNC ----
@@ -361,15 +506,19 @@ function openEditPlan() {
 document.getElementById('planForm').addEventListener('submit', async e => {
   e.preventDefault();
   const body = {
-    title: document.getElementById('editPlanTitle').value,
-    address: document.getElementById('editPlanAddress').value,
-    total_budget: document.getElementById('editPlanBudget').value,
-    exchange_rate: document.getElementById('editPlanRate').value
+    title: document.getElementById('editPlanTitle')?.value || '',
+    address: document.getElementById('editPlanAddress')?.value || '',
+    total_budget: document.getElementById('editPlanBudget')?.value || 0,
+    exchange_rate: document.getElementById('editPlanRate')?.value || 0
   };
   try {
-    await api('save_plan', body);
-    closeModal('editPlanModal'); await init();
-    toast(t('toast_settings_saved'));
+    const res = await api('save_plan', body);
+    if (res && res.ok) {
+      closeModal('editPlanModal'); await init();
+      toast(t('toast_settings_saved'));
+    } else {
+      toast(res?.error || t('err_generic'), 'err');
+    }
   } catch(err) { console.error(err); toast(t('err_generic'), 'err'); }
 });
 
