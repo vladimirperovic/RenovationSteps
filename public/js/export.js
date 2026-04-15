@@ -204,11 +204,9 @@ function toggleTheme() {
 
 // Initialize theme from localStorage on page load
 (function initTheme() {
-  setTimeout(() => {
-    const saved = localStorage.getItem('planner_theme');
-    if (saved === 'v1-light' || saved === 'light') setTheme('v1-light');
-    else setTheme('v1-dark');
-  }, 100);
+  const saved = localStorage.getItem('planner_theme');
+  if (saved === 'v1-light' || saved === 'light') setTheme('v1-light');
+  else setTheme('v1-dark');
 })();
 
 // =============================================

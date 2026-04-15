@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <style>
-    body { visibility: hidden; background: #030305; margin:0; padding:0; overflow:hidden; }
+    body { visibility: hidden; margin:0; padding:0; overflow:hidden; }
     /* Premium Background Orbs & Grid - Inline for instant load */
     .grid-overlay {
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -366,6 +366,17 @@
 </head>
 
 <body class="blanner-body">
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('planner_theme') || 'v1-dark';
+      if (savedTheme === 'v1-light' || savedTheme === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+        document.body.style.background = '#fcfaf8';
+      } else {
+        document.body.style.background = '#030305';
+      }
+    })();
+  </script>
   <!-- Grid overlay -->
   <div class="grid-overlay"></div>
   <div class="orb orb-1"></div>
