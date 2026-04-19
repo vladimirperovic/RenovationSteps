@@ -143,7 +143,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
-app.use(express.static('public'));
+// Static assets: long cache for JS/CSS (7 days), short for HTML (1 day)
+app.use(express.static('public', {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day
+    } else if (/\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|webp|ico)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable'); // 7 days
+    }
+  }
+}));
 
 // ------------------------------------------------------------------------
 // PROJECT API — Single action-based endpoint (used by planner frontend)

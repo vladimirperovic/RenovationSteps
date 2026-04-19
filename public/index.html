@@ -45,8 +45,8 @@
     body[data-theme="light"] .bl-orb-2 { background: radial-gradient(circle, #334155 0%, transparent 70%); opacity:0.12; }
   </style>
   <script>
-    // Fail-safe: Reveal body after 3s even if JS fails
-    setTimeout(() => { if(document.body.style.visibility !== 'visible') document.body.style.visibility = 'visible'; }, 3000);
+    // Fail-safe: Reveal body after 500ms even if JS fails (mobile-optimized)
+    setTimeout(() => { if(document.body.style.visibility !== 'visible') document.body.style.visibility = 'visible'; }, 500);
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,7 +73,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="planner.css?v=10">
   <link rel="stylesheet" id="v2css" href="planner2.css?v=4">
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&amp;family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,600;0,800;1,300&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet">
+  <!-- Non-blocking font load: media=print trick prevents render-blocking on mobile -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,600;0,800;1,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,600;0,800;1,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"></noscript>
   <script src="js/chart.min.js" defer></script>
   <script src="js/fullcalendar.min.js" defer></script>
   <script src="js/lucide.min.js" defer></script>
@@ -2065,10 +2067,14 @@ const API            = '/api/project/' + currentProject;
         }
       };
 
+      // Reveal immediately — fonts load non-blocking via preload
+      // Small delay only to allow auth-logic.js to run first
       if (document.fonts) {
-        document.fonts.ready.then(revealBody);
-        // Fail-safe: Reveal after 1.5s even if fonts hang
-        setTimeout(revealBody, 1500);
+        // Don't wait for fonts.ready — they load non-blocking now
+        // Just do a quick microtask delay for auth check
+        Promise.resolve().then(revealBody);
+        // Hard fail-safe at 600ms for slow mobile connections
+        setTimeout(revealBody, 600);
       } else {
         revealBody();
       }
