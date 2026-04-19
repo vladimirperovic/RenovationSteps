@@ -9,6 +9,21 @@ let appData  = { plan:{}, phases:[], expenses:[], workers:[], tasks:[], logs:[],
 let IS_ADMIN = false;
 let CAN_USE_TEMPLATES = false;
 
+// Track which tabs have been initialized (lazy init)
+const _tabInit = {};
+
+// Lazy-load a script dynamically (only once)
+function lazyScript(src) {
+  return new Promise((resolve) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = resolve; // fail silently — don't block UI
+    document.head.appendChild(s);
+  });
+}
+
 async function api(action, body = {}) {
   console.log(`[API] Calling: ${API} | Action: ${action}`, body);
   try {
@@ -104,6 +119,7 @@ function render() {
     catch(e) { console.error(`Render fail: ${name}`, e); } 
   };
   
+  // Render tabs that are always needed on load
   tryR(renderOverview, 'Overview');
   tryR(renderPhases, 'Phases');
   tryR(renderFinances, 'Finances');
@@ -112,12 +128,40 @@ function render() {
   tryR(renderPunchList, 'PunchList');
   tryR(renderMaterials, 'Materials');
   tryR(renderSettings, 'Settings');
-  tryR(renderGantt, 'Gantt');
-  tryR(renderCalendar, 'Calendar');
   tryR(loadProjectList, 'ProjectList');
+  
+  // Lazy tabs: Calendar, Gantt, Map — only render when first visited
+  // (skipped here, handled in switchTab)
   
   if (window.lucide) {
     try { lucide.createIcons(); } catch(e) {}
+  }
+}
+
+// switchTab with lazy init for heavy tabs
+const _origSwitchTab = window.switchTab;
+function switchTab(name) {
+  // Call existing switchTab if defined in HTML
+  if (typeof _origSwitchTab === 'function') _origSwitchTab(name);
+  else {
+    document.querySelectorAll('.bl-tab').forEach(t => t.classList.remove('active'));
+    const el = document.getElementById('tab-' + name);
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.bl-nav-item').forEach(a => a.classList.toggle('active', a.dataset.tab === name));
+  }
+
+  // Lazy-init heavy tabs on first visit
+  if (_tabInit[name]) return;
+  _tabInit[name] = true;
+
+  if (name === 'calendar') {
+    lazyScript('js/fullcalendar.min.js').then(() => {
+      if (typeof renderCalendar === 'function') renderCalendar();
+    });
+  } else if (name === 'gantt') {
+    if (typeof renderGantt === 'function') renderGantt();
+  } else if (name === 'map') {
+    if (typeof renderMindmap === 'function') renderMindmap();
   }
 }
 
